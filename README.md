@@ -1,3 +1,3 @@
 # scripts
 
-Bash scripts for basic admin automation
+Bash scripts for basic tasks and automation
