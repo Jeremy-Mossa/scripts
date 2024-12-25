@@ -10,7 +10,7 @@ CLONE_DIR1="$HOME/$REPO1_NAME"
 CLONE_DIR2="$HOME/scripts"
 SCRIPT_PATH="$(realpath "$0")"
 CRON_SCHEDULE="0 * * * * $SCRIPT_PATH"
-USER_EMAIL="jeremy.mossa@gmail.com"
+USER_EMAIL=""
 USER_NAME="Jeremy Mossa"
 
 # Function to check if a program is installed
