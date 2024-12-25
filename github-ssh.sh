@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-EMAIL="jeremy.mossa@gmail.com"
+EMAIL=""
 GITHUB_USERNAME="Jeremy-Mossa"
 SSH_KEY_PATH="$HOME/.ssh/id_rsa"
 
