@@ -6,6 +6,7 @@ df=(
   ".bashrc"
   ".bash_profile"
   ".cron"
+  ".dependency"
   ".dillo/"
   ".fluxbox/"
   ".vimrc"
