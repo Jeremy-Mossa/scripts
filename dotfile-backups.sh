@@ -5,6 +5,7 @@ Dir="/home/fedora41/dotfiles"
 df=(
   ".bashrc"
   ".bash_profile"
+  ".cron"
   ".dillo/"
   ".fluxbox/"
   ".vimrc"
@@ -13,12 +14,10 @@ df=(
 )
 
 cd ~
-pwd
 
 for f in "${df[@]}"; do
-  if [ -f "$f" ]; then
-    cp -r $f $Dir
-    echo $f
+  if [ -e "$f" ]; then
+    cp -r "$f" "$Dir"
   else
     echo "File not found: $file"
   fi
