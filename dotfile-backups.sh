@@ -15,7 +15,7 @@ df=(
 )
 
 # Alphabetical sorting of the .dependency file before sync
-# There's probably a better way to do this ...
+# There's probably a more compact way to do this
 cat ~/Documents/to_install.txt | sort > ~/Documents/sorted
 cat ~/Documents/sorted > ~/Documents/to_install.txt
 cp ~/Documents/to_install.txt ~/.dependency
