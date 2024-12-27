@@ -14,6 +14,12 @@ df=(
   ".Xresources"
 )
 
+# Alphabetical sorting of the .dependency file before sync
+cat ~/Documents/to_install.txt | sort > ~/Documents/sorted
+cat ~/Documents/sorted > ~/Documents/to_install.txt
+cp ~/Documents/to_install.txt ~/.dependency
+rm ~/Documents/sorted
+
 cd ~
 
 for f in "${df[@]}"; do
