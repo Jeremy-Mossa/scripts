@@ -32,7 +32,6 @@ for f in "${df[@]}"; do
 done
 
 cd "$Dir" || exit
-git pull # Pull first in case edited in GitHub
 git add .
 git commit -m "Scheduled backup of dotfiles" || echo "no changes" 
 git push || echo "git push failure"
