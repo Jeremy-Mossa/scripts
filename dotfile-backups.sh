@@ -26,7 +26,7 @@ for f in "${df[@]}"; do
   if [ -e "$f" ]; then
     cp -r "$f" "$Dir"
   else
-    echo "File not found: $file"
+    echo "File/Directory not found: $f"
   fi
 done
 
