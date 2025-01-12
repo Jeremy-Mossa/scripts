@@ -36,4 +36,4 @@ done
 cd "$Dir" || exit
 git add .
 git commit -m "Scheduled backup of dotfiles" || echo "no changes" 
-git push || echo "git push failure"
+git push ssh main || echo "git push failure"
