@@ -9,5 +9,5 @@ for dir in $git_dirs; do
 		changes to commit in $dir."
 	git push origin main || echo "Failed to push changes in $dir." 
     # Pull first in case editing was done on github
-    git pull
+    git pull origin main
 done
