@@ -1,6 +1,10 @@
 #!/bin/bash
 
-Dir="/home/fedora41/dotfiles"
+if [ ! -d ~/dotfiles ]; then
+  mkdir ~/dotfiles
+fi
+
+Dir="/home/unix/dotfiles"
 
 df=(
   ".bashrc"
