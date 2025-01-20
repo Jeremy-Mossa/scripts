@@ -1,48 +1,42 @@
 #!/bin/bash
 
-# Define the file containing the list of programs to install
-INSTALL_LIST=~/Documents/to_install.txt
-
-# Check if the install list file exists
-if [ ! -f "$INSTALL_LIST" ]; then
-    echo "Error: File $INSTALL_LIST does not exist."
-    exit 1
-fi
-
-# Function to install a single program
-install_program() {
-    local program=$1
-    echo "Installing $program..."
-
-    if command -v "$program" >/dev/null 2>&1; then
-        echo "$program is already installed."
-    else
-        # Attempt to install the program using dnf, the package manager for Fedora
-        sudo dnf install -y "$program"
-
-        # Check if the installation was successful
-        if command -v "$program" >/dev/null 2>&1; then
-            echo "$program has been installed successfully."
-        else
-            echo "Error: Failed to install $program."
-            return 1
-        fi
-    fi
-
-    return 0
-}
-
-# Elevate privileges at the start
+# Elevate privileges before install
 sudo -v
 
-# Read the install list file line by line
-while IFS= read -r program; do
-    # Skip empty lines and comments
-    if [[ -z "$program" || "$program" == \#* ]]; then
-        continue
-    fi
+rm -r ~/Desktop ~/Videos ~/Music \
+  ~/Templates ~/Pictures 2>/dev/null
 
-    install_program "$program"
-done < "$INSTALL_LIST"
+if [ ! -d ~/Storage ]; then
+  mkdir ~/Storage
+  wget https://github.com/Jeremy-Mossa/Storage/archive/main.zip
+fi
 
-echo "All programs processed."
+if [ ! -d ~/books ]; then
+  mkdir ~/books
+fi
+
+if [ ! -d ~/C ]; then
+  mkdir ~/C
+fi
+
+if [ ! -d ~/scripts ]; then
+  git clone https://github.com/Jeremy-Mossa/scripts
+fi
+
+if [ ! -d ~/dotfiles ]; then
+  git clone https://github.com/Jeremy-Mossa/dotfiles
+fi
+
+for line in $(cat ~/.dependency); do
+  yes | sudo dnf install $line
+done
+
+gotslim=$(which slim)
+gdmstatus=$(systemctl status gdm | grep disabled | cut -d";" -f2)
+if [ $gotslim = "/bin/slim" ] && [ $gdmstatus != "disabled" ]; then 
+  sudo systemctl disable gdm 2>/dev/null
+  sudo systemctl enable slim 2>/dev/null
+else
+  echo "gdm status: $gdmstatus"
+fi
+

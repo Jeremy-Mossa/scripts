@@ -20,8 +20,9 @@ df=(
 
 # Alphabetical sorting of the .dependency file before sync
 # Research a more compact way to do this
-cat ~/Documents/to_install.txt | sort > ~/.dependency
-cat ~/.dependency > ~/Documents/to_install.txt
+sort ~/.dependency > ~/tmp
+cat ~/tmp > ~/.dependency
+rm ~/tmp
 
 cd ~
 
