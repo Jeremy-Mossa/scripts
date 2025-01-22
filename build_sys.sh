@@ -27,6 +27,10 @@ if [ ! -d ~/dotfiles ]; then
   git clone https://github.com/Jeremy-Mossa/dotfiles
 fi
 
+if [ ! -n ~/downloads ]; then
+  ln -s ~/Downloads downloads
+fi
+
 for line in $(cat ~/.dependency); do
   yes | sudo dnf install $line
 done
