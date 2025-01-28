@@ -5,7 +5,7 @@ f=$f.pl
 touch $f
 chmod 755 $f
 cat << EOF > $f
-#!/usr/bin/perl'
+#!/usr/bin/perl
 
 use warnings;
 use strict;
