@@ -8,7 +8,6 @@ cat << EOF > $f
 #!/usr/bin/perl
 
 use warnings;
-use strict;
 use v5.40;
 use utf8;
 
