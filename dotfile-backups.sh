@@ -4,7 +4,7 @@ if [ ! -d ~/dotfiles ]; then
   mkdir ~/dotfiles
 fi
 
-Dir="/home/unix/dotfiles"
+Dir="/home/jbm/dotfiles"
 
 df=(
   ".bashrc"
