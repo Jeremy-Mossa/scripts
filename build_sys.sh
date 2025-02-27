@@ -31,6 +31,10 @@ if [ ! -n ~/downloads ]; then
   ln -s ~/Downloads downloads
 fi
 
+if [ ! -n ~/perl ]; then
+  mkdir ~/perl
+fi
+
 for line in $(cat ~/.dependency); do
   yes | sudo dnf install $line
 done
