@@ -5,7 +5,8 @@ gnucash-cli --quotes dump yahooweb \
 
 price=$(grep last wolf.tkr \
   | cut -d':' -f2 \
-  | cut -d'<' -f1)
-printf "\tWOLF: $price\n" | lolcat
+  | cut -d'<' -f1 \
+  | sed 's/^[ ]*//')
+printf "\tWOLF: \$$price\n" | lolcat
 
 rm wolf.tkr
