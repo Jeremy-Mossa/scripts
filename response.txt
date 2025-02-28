@@ -1,1 +1,34 @@
-\nhow can I use xdotool to find the copy button of your response?\ni Dont want to find the button for my system, but for my system to find it programmatically\nhow can I use xdotool ony to dynamically locate the copy button for your response?\ni Dont want to find the button for my system, but for my system to find it programmatically
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "4\n"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.0030423556454479694
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 13,
+    "candidatesTokenCount": 2,
+    "totalTokenCount": 15,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 13
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 2
+      }
+    ]
+  },
+  "modelVersion": "gemini-2.0-flash"
+}
