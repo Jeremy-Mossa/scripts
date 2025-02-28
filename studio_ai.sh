@@ -15,10 +15,11 @@ curl --silent $url$sub_url1$sub_url2 \
   "contents": [{
     "parts":[{"text": "'"$query"'"}]
     }]
-   }' >> ~/tmp/initial_response.txt
+   }' >> ~/tmp/data.json
 
-response=$(grep "text" ~/tmp/initial_response.txt \
-  | cut -d':' -f2)
-
-echo -e $response | sed 's/"//g'
-rm ~/tmp/initial_response.txt
+sleep 3
+perl ~/perl/json_printer.pl
+# response=$(grep "text" ~/tmp/initial_response.txt \
+#   | cut -d':' -f2)
+# 
+# echo -e $response | sed 's/"//g'
