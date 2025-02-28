@@ -105,3 +105,4 @@ while ($count <= 10 && $content =~
   $count += 1;
 }
 print "-" x 54, "\n";
+system("rm forecast.html")
