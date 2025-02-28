@@ -64,9 +64,13 @@ sub ordinal {
     return $n . 'th';
 }
 
-# Extract and print all content between "date" and "}"
+# get the nicely formatted city name
+my $location = ($content =~ /banner__title>(.*?) 14/) ? $1 : undef;
+
 print "-"x54, "\n";
-print "14-day forecast for $city\n\n";
+print "14-day forecast for $location\n\n";
+
+# Extract and print all content between "date" and "}"
 while ($content =~ /"ts":"(.*?)","ds":"(.*?)","icon":\d+,"desc":"(.*?)","temp":(\d+),"templow":(\d+),"cf":\d+,"wind":\d+,"wd":\d+,"hum":\d+,"pc":\d+(?:,"rain":\d+.\d+)?/sg) {
     my ($short_date, $long_date, $desc, $temp, $templow) = ($1, $2, $3, $4, $5);
 
