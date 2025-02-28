@@ -4,7 +4,13 @@ use warnings;
 use v5.40;
 use utf8;
 use autodie;
+use open ':std', ':encoding(UTF-8)';
 
+# ANSI escape codes for colors
+my $green = "\033[32m";
+my $blue  = "\033[34m";
+my $red   = "\033[31m";
+my $reset = "\033[0m";
 
 # Check if the correct number of arguments are provided
 if (@ARGV != 2) {
@@ -42,7 +48,7 @@ close $fh;
 
 # Define a hash map for weather description to Unicode glyphs
 my %weather_glyphs = (
-    "Sunny"          => "🌞🌞🌞",
+    "Sunny"          => "\x{2600}",
     "Partly cloudy"  => "\x{26C5}",
     "Cloudy"         => "\x{2601}",
     "Light rain"     => "\x{1F327}",
@@ -59,18 +65,17 @@ sub ordinal {
 }
 
 # Extract and print all content between "date" and "}"
+print "-"x54, "\n";
+print "14-day forecast for $city\n\n";
 while ($content =~ /"ts":"(.*?)","ds":"(.*?)","icon":\d+,"desc":"(.*?)","temp":(\d+),"templow":(\d+),"cf":\d+,"wind":\d+,"wd":\d+,"hum":\d+,"pc":\d+(?:,"rain":\d+.\d+)?/sg) {
     my ($short_date, $long_date, $desc, $temp, $templow) = ($1, $2, $3, $4, $5);
-
-    # Get the Unicode glyph for the weather description
-    my $glyph = $weather_glyphs{$desc} // "";
 
     # Convert the long date to the required format
     $long_date =~ /^(\w+), (\w+) (\d+)/;
     my $formatted_date = "$1 " . ordinal($3);
 
-    # Print the formatted output
-    printf "%-10s%s%-8s Low: %-2d High: %-2d\n", $formatted_date, $glyph, $desc, $templow, $temp;
+    # Print the formatted output with colors and formatting
+    printf "\t${green}%-10s%26s${reset}\n", $formatted_date, $desc;
+    printf "\t${blue}Low: %-2d${reset}\t${red}High: %-2d${reset}\n\n", $templow, $temp;
 }
-
-print "\x{1F327}"x5, "\n";
+print "-"x54, "\n";
