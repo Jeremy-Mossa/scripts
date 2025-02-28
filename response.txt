@@ -1,1 +1,1 @@
-\nhow can I use xdotool to find the copy button of your response?\ni Dont want to find the button for my system, but for my system to find it programmatically
+\nhow can I use xdotool to find the copy button of your response?\ni Dont want to find the button for my system, but for my system to find it programmatically\nhow can I use xdotool ony to dynamically locate the copy button for your response?\ni Dont want to find the button for my system, but for my system to find it programmatically
