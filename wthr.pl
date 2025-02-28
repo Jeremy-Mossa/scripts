@@ -23,14 +23,11 @@ my $country = $ARGV[1];
 my $url     = "https://www.timeanddate.com/weather/$country/$city/ext";
 my $file    = 'forecast.html';
 
-my $curl_command = "curl -o $file $url";
+my $curl_command = "curl --silent -o $file $url";
 my $result       = system($curl_command);
+system("clear");
 
-if ($result == 0)
-{
-  print "Website content saved to $file\n";
-}
-else
+if ($result != 0)
 {
   print "Failed to retrieve content from $url\n";
 }
@@ -73,11 +70,26 @@ sub ordinal
 my $location = ($content =~ /banner__title>(.*?) 14/) ? $1 : undef;
 
 print "\n", "-" x 54, "\n";
-print "14-day forecast for $location\n\n";
+print "\t10-day forecast for $location\n\n";
 
 # Extract and print all content between "date" and "}"
-while ($content =~
-  /"ts":"(.*?)","ds":"(.*?)","icon":\d+,"desc":"(.*?)","temp":(\d+),"templow":(\d+),"cf":\d+,"wind":\d+,"wd":\d+,"hum":\d+,"pc":\d+(?:,"rain":\d+.\d+)?/sg)
+# 10 day weather forecast
+
+my $count = 1;
+while ($count <= 10 && $content =~
+    /"ts":"(.*?)",       # timestamp
+    "ds":"(.*?)",        # date string
+    "icon":\d+,          # icon (not captured)
+    "desc":"(.*?)",      # description
+    "temp":(\d+),        # temperature
+    "templow":(\d+),     # low temperature
+    "cf":\d+,            # feel-like temperature (not captured)
+    "wind":\d+,          # wind speed (not captured)
+    "wd":\d+,            # wind direction (not captured)
+    "hum":\d+,           # humidity (not captured)
+    "pc":\d+             # precipitation chance (not captured)
+    (?:,"rain":\d+.\d+)? # optional rain amount (not captured)
+    /sgx)                # /x allows ignoring whitespace in pattern
 {
   my ($short_date, $long_date, $desc, $temp, $templow) = ($1, $2, $3, $4, $5);
 
@@ -89,5 +101,7 @@ while ($content =~
   printf "\t${green}%s${reset}\n", $desc;
   printf "\t${green}Low: %-2d${reset}\t${green}High: %-2d${reset}\n\n",
     $templow, $temp;
+
+  $count += 1;
 }
 print "-" x 54, "\n";
