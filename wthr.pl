@@ -20,7 +20,7 @@ if (@ARGV != 2)
 
 my $city    = $ARGV[0];
 my $country = $ARGV[1];
-my $url     = "https://www.timeanddate.com/weather/$country/$city/ext";
+my $url     = "https://api.weather.gov/points/$country/$city/ext";
 my $file    = 'forecast.html';
 
 my $curl_command = "curl --silent -o $file $url";
