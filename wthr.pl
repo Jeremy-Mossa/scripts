@@ -41,9 +41,10 @@ else
 }
 
 # save the forecast JSON response
-my $forecast = `curl -s "$forecast_url"`;
+my $forecast_response = `curl -s "$forecast_url"`;
 open(my $fh, '>', 'forecast.txt') or die "Cannot open file: $!";
-print $fh $forecast;
+print $fh $forecast_response;
+close($fh);
 
 my @labels = qw(
   number
@@ -55,53 +56,84 @@ my @labels = qw(
   detailedForecast
 );
 
-foreach my $label (@labels)
+# foreach my $label (@labels)
+# {
+#   if ($forecast =~ /"$label":\s*("([^"]+)"|(\d+))/s)
+#   {
+#     say "\t", $2 || $3;
+#   }
+# }
+
+# Read JSON file
+my $filename = "forecast.txt";
+open(my $fh2, '<', $filename) or die "Cannot open file: $!";
+my $forecast = do { local $/; <$fh2> };    # Slurp entire file
+close $fh2;
+
+my %months = (
+              1  => "JAN",
+              2  => "FEB",
+              3  => "MAR",
+              4  => "APR",
+              5  => "MAY",
+              6  => "JUN",
+              7  => "JUL",
+              8  => "AUG",
+              9  => "SEP",
+              10 => "OCT",
+              11 => "NOV",
+              12 => "DEC",
+             );
+
+# Store periods by day
+my %days_data;
+while ($forecast =~
+  /"number": \d+,.*?"name": "([^"]+)".*?"startTime": "(\d{4})-(\d{2})-(\d{2})T[^"]+".*?"isDaytime": (true|false).*?"temperature": (\d+).*?"probabilityOfPrecipitation".*?"value": (\d+|null).*?"shortForecast": "([^"]+)"/gs
+  )
 {
-  if ($forecast =~ /"$label":\s*("([^"]+)"|(\d+))/s)
+  my ($name, $year, $month, $day, $is_daytime, $temp, $precip, $short_forecast)
+    = ($1, $2, $3, $4, $5, $6, $7, $8);
+
+  my $date_key = "$year-$month-$day";
+  my ($day_name) = $name =~ /^(\w+)/;
+
+  $days_data{$date_key} ||= {};
+  if ($is_daytime eq "true")
   {
-    say "\t", $2 || $3;
+    $days_data{$date_key}{day_name}       = $day_name;
+    $days_data{$date_key}{day_temp}       = $temp;
+    $days_data{$date_key}{short_forecast} = $short_forecast;
+    $days_data{$date_key}{month}          = 0 + $month;      # Convert "03" to 3
+    $days_data{$date_key}{day}            = 0 + $day;        # Convert "02" to 2
   }
+  else
+  {
+    $days_data{$date_key}{night_temp} = $temp;
+  }
+  $precip = undef if $precip eq "null";
+  $days_data{$date_key}{precip} = $precip
+    if defined $precip
+    && (!defined $days_data{$date_key}{precip}
+        || $precip > $days_data{$date_key}{precip});
 }
 
+print "\n";
 
+# Process and print each day
+for my $date_key (sort keys %days_data)
+{
+  my $data = $days_data{$date_key};
+  next unless defined $data->{day_temp} && defined $data->{night_temp};
 
-# "periods": [
-#            {
-#                "number": 1,
-#                "name": "Overnight",
-#                "startTime": "2025-03-02T00:00:00-06:00",
-#                "endTime": "2025-03-02T06:00:00-06:00",
-#                "isDaytime": false,
-#                "temperature": 56,
-#                "temperatureUnit": "F",
-#                "temperatureTrend": "",
-#                "probabilityOfPrecipitation": {
-#                    "unitCode": "wmoUnit:percent",
-#                    "value": null
-#                },
-#                "windSpeed": "5 mph",
-#                "windDirection": "ESE",
-#                "icon": "https://api.weather.gov/icons/land/night/few?size=medium",
-#                "shortForecast": "Mostly Clear",
-#                "detailedForecast": "Mostly clear, with a low around 56. East southeast wind around 5 mph."
-#            },
-#
-#            {
-#                "number": 13,
-#                "name": "Friday Night",
-#                "startTime": "2025-03-07T18:00:00-08:00",
-#                "endTime": "2025-03-08T06:00:00-08:00",
-#                "isDaytime": false,
-#                "temperature": 46,
-#                "temperatureUnit": "F",
-#                "temperatureTrend": "",
-#                "probabilityOfPrecipitation": {
-#                    "unitCode": "wmoUnit:percent",
-#                    "value": null
-#                },
-#                "windSpeed": "2 to 8 mph",
-#                "windDirection": "W",
-#                "icon": "https://api.weather.gov/icons/land/night/few?size=medium",
-#                "shortForecast": "Mostly Clear",
-#                "detailedForecast": "Mostly clear, with a low around 46."
-#            },
+  my $day   = $data->{day};
+  my $month = $data->{month};
+  my $suffix =
+    $day =~ /1$/ ? "st" : $day =~ /2$/ ? "nd" : $day =~ /3$/ ? "rd" : "th";
+  my $formatted_date = "$data->{day_name}, $months{$month} $day$suffix";
+
+  say "\t$formatted_date";
+  say "\tLow: $data->{night_temp}°   Hi: $data->{day_temp}°";
+  say "\t$data->{short_forecast}";
+  say "\tChance: ", defined $data->{precip} ? "$data->{precip}%" : "0%";
+  print "\n";
+}
