@@ -70,11 +70,11 @@ my %months = (
 # Store periods by day
 my %days_data;
 
-while (
-  $forecast =~ /"name": "([^"]+)".*?"startTime": "(\d{4})-(\d{2})-(\d{2})T[^"]+".*?"isDaytime": (true|false).*?"temperature": (\d+).*?"probabilityOfPrecipitation".*?"value": (\d+|null).*?"shortForecast": "([^"]+)"/gs)
+while ($forecast =~
+  /"name": "([^"]+)".*?"startTime": "(\d{4})-(\d{2})-(\d{2})T[^"]+".*?"isDaytime": (true|false).*?"temperature": (\d+).*?"probabilityOfPrecipitation".*?"value": (\d+|null).*?"shortForecast": "([^"]+)"/gs
+  )
 {
-  my ($name, $year, $month, $day, $is_daytime, 
-      $temp, $precip, $short_forecast)
+  my ($name, $year, $month, $day, $is_daytime, $temp, $precip, $short_forecast)
     = ($1, $2, $3, $4, $5, $6, $7, $8);
 
   my $date_key = "$year-$month-$day";
@@ -100,7 +100,12 @@ while (
         || $precip > $days_data{$date_key}{precip});
 }
 
+$city = s/-/ /g;
+$city = ucfirst $city;
 print "\n";
+print "\t", "-" x 32, "\n";
+say "\tWeather for $city";
+print "\t", "-" x 32, "\n";
 
 # Process and print each day
 for my $date_key (sort keys %days_data)
