@@ -6,103 +6,45 @@ use utf8;
 use autodie;
 use open ':std', ':encoding(UTF-8)';
 
-# ANSI escape codes for colors
-my $green = "\033[32m";
-my $blue  = "\033[34m";
-my $red   = "\033[31m";
-my $reset = "\033[0m";
+die "Usage: $0 <city>\nExample: $0 Dallas\n" unless @ARGV == 1;
+my $city = $ARGV[0];
 
-# Check if the correct number of arguments are provided
-if (@ARGV != 2)
-{
-  die "Usage: perl script.pl <city> <country>\n";
+# Step 1: Geocode the city to get latitude and longitude using Nominatim
+my $geocode_url = "https://nominatim.openstreetmap.org/search?q=$city,US&format=json&limit=1";
+my $geocode_json = `curl -s "$geocode_url"`;
+
+# Basic JSON parsing without modules (assumes simple structure)
+my ($lat, $lon);
+if ($geocode_json =~ /"lat":"([-.\d]+)".*?"lon":"([-.\d]+)"/s) {
+    $lat = sprintf("%.4f",$1);
+    $lon = sprintf("%.4f",$2);
+} else {
+    die "Failed to geocode '$city'. Response: $geocode_json\n";
 }
 
-my $city    = $ARGV[0];
-my $country = $ARGV[1];
-my $url     = "https://api.weather.gov/points/$country/$city/ext";
-my $file    = 'forecast.html';
+print "Coordinates for $city: $lat, $lon\n";
 
-my $curl_command = "curl --silent -o $file $url";
-my $result       = system($curl_command);
-system("clear");
+# Step 2: Query weather.gov points endpoint
+my $points_url = "https://api.weather.gov/points/$lat,$lon";
+my $points_json = `curl -s "$points_url"`;
 
-if ($result != 0)
-{
-  print "Failed to retrieve content from $url\n";
+# Extract forecast URL from points response
+my $forecast_url;
+if ($points_json =~ /"forecastHourly":"(.*?)"/) {
+    $forecast_url = $1;
+} else {
+    die "Failed to get forecast URL. Response: $points_json\n";
 }
 
-# Open the file for reading
-open(my $fh, '<', $file) or die "Could not open file '$file' $!";
+# Step 3: Fetch the hourly forecast
+my $forecast_json = `curl -s "$forecast_url"`;
 
-# Read the file content
-my $content = do { local $/; <$fh> };
-
-# Close the file
-close $fh;
-
-# Extract and print all content between "date" and "}"
-# while ($content =~ /"date"(.*?)}/sg) {
-#     my $extracted_content = $1;
-#     print "$extracted_content\n\n";
-# }
-
-# Define a hash map for weather description to Unicode glyphs
-my %weather_glyphs = (
-                      "Sunny"         => "\x{2600}",
-                      "Partly cloudy" => "\x{26C5}",
-                      "Cloudy"        => "\x{2601}",
-                      "Light rain"    => "\x{1F327}",
-                     );
-
-# Helper function to convert date to ordinal
-sub ordinal
-{
-  my $n = shift;
-  return $n . 'th' if $n =~ /1[0-9]$/;
-  return $n . 'st' if $n =~ /1$/;
-  return $n . 'nd' if $n =~ /2$/;
-  return $n . 'rd' if $n =~ /3$/;
-  return $n . 'th';
+# Extract the current temperature (first period)
+my $temperature;
+if ($forecast_json =~ /"temperature":(\d+)/) {
+    $temperature = $1;
+} else {
+    die "Failed to parse temperature. Response: $forecast_json\n";
 }
 
-# get the nicely formatted city name
-my $location = ($content =~ /banner__title>(.*?) 14/) ? $1 : undef;
-
-print "\n", "-" x 54, "\n";
-print "\t10-day forecast for $location\n\n";
-
-# Extract and print all content between "date" and "}"
-# 10 day weather forecast
-
-my $count = 1;
-while ($count <= 10 && $content =~
-    /"ts":"(.*?)",       # timestamp
-    "ds":"(.*?)",        # date string
-    "icon":\d+,          # icon (not captured)
-    "desc":"(.*?)",      # description
-    "temp":(\d+),        # temperature
-    "templow":(\d+),     # low temperature
-    "cf":\d+,            # feel-like temperature (not captured)
-    "wind":\d+,          # wind speed (not captured)
-    "wd":\d+,            # wind direction (not captured)
-    "hum":\d+,           # humidity (not captured)
-    "pc":\d+             # precipitation chance (not captured)
-    (?:,"rain":\d+.\d+)? # optional rain amount (not captured)
-    /sgx)                # /x allows ignoring whitespace in pattern
-{
-  my ($short_date, $long_date, $desc, $temp, $templow) = ($1, $2, $3, $4, $5);
-
-  # Convert the long date to the required format
-  $long_date =~ /^(\w+), (\w+) (\d+)/;
-  my $formatted_date = "$1 " . ordinal($3);
-
-  printf "\t${green}%s${reset}\n", $formatted_date;
-  printf "\t${green}%s${reset}\n", $desc;
-  printf "\t${green}Low: %-2d${reset}\t${green}High: %-2d${reset}\n\n",
-    $templow, $temp;
-
-  $count += 1;
-}
-print "-" x 54, "\n";
-system("rm forecast.html")
+print "Current temperature in $city: $temperature°F\n";
