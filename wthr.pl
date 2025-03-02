@@ -46,24 +46,6 @@ open(my $fh, '>', 'forecast.txt') or die "Cannot open file: $!";
 print $fh $forecast_response;
 close($fh);
 
-my @labels = qw(
-  number
-  name
-  startTime
-  temperature
-  value
-  shortForecast
-  detailedForecast
-);
-
-# foreach my $label (@labels)
-# {
-#   if ($forecast =~ /"$label":\s*("([^"]+)"|(\d+))/s)
-#   {
-#     say "\t", $2 || $3;
-#   }
-# }
-
 # Read JSON file
 my $filename = "forecast.txt";
 open(my $fh2, '<', $filename) or die "Cannot open file: $!";
@@ -87,11 +69,12 @@ my %months = (
 
 # Store periods by day
 my %days_data;
-while ($forecast =~
-  /"number": \d+,.*?"name": "([^"]+)".*?"startTime": "(\d{4})-(\d{2})-(\d{2})T[^"]+".*?"isDaytime": (true|false).*?"temperature": (\d+).*?"probabilityOfPrecipitation".*?"value": (\d+|null).*?"shortForecast": "([^"]+)"/gs
-  )
+
+while (
+  $forecast =~ /"name": "([^"]+)".*?"startTime": "(\d{4})-(\d{2})-(\d{2})T[^"]+".*?"isDaytime": (true|false).*?"temperature": (\d+).*?"probabilityOfPrecipitation".*?"value": (\d+|null).*?"shortForecast": "([^"]+)"/gs)
 {
-  my ($name, $year, $month, $day, $is_daytime, $temp, $precip, $short_forecast)
+  my ($name, $year, $month, $day, $is_daytime, 
+      $temp, $precip, $short_forecast)
     = ($1, $2, $3, $4, $5, $6, $7, $8);
 
   my $date_key = "$year-$month-$day";
@@ -103,8 +86,8 @@ while ($forecast =~
     $days_data{$date_key}{day_name}       = $day_name;
     $days_data{$date_key}{day_temp}       = $temp;
     $days_data{$date_key}{short_forecast} = $short_forecast;
-    $days_data{$date_key}{month}          = 0 + $month;      # Convert "03" to 3
-    $days_data{$date_key}{day}            = 0 + $day;        # Convert "02" to 2
+    $days_data{$date_key}{month}          = 0 + $month;
+    $days_data{$date_key}{day}            = 0 + $day;
   }
   else
   {
