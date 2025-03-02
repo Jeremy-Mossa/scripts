@@ -42,14 +42,17 @@ else
 
 # save the forecast JSON response
 my $forecast = `curl -s "$forecast_url"`;
+open(my $fh, '>', 'forecast.txt') or die "Cannot open file: $!";
+print $fh $forecast;
 
 my @labels = qw(
+  number
   name
   startTime
   temperature
-  temperatureUnit
   value
   shortForecast
+  detailedForecast
 );
 
 foreach my $label (@labels)
@@ -59,6 +62,7 @@ foreach my $label (@labels)
     say "\t", $2 || $3;
   }
 }
+
 
 
 # "periods": [
@@ -82,3 +86,22 @@ foreach my $label (@labels)
 #                "detailedForecast": "Mostly clear, with a low around 56. East southeast wind around 5 mph."
 #            },
 #
+#            {
+#                "number": 13,
+#                "name": "Friday Night",
+#                "startTime": "2025-03-07T18:00:00-08:00",
+#                "endTime": "2025-03-08T06:00:00-08:00",
+#                "isDaytime": false,
+#                "temperature": 46,
+#                "temperatureUnit": "F",
+#                "temperatureTrend": "",
+#                "probabilityOfPrecipitation": {
+#                    "unitCode": "wmoUnit:percent",
+#                    "value": null
+#                },
+#                "windSpeed": "2 to 8 mph",
+#                "windDirection": "W",
+#                "icon": "https://api.weather.gov/icons/land/night/few?size=medium",
+#                "shortForecast": "Mostly Clear",
+#                "detailedForecast": "Mostly clear, with a low around 46."
+#            },
