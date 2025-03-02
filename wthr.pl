@@ -54,7 +54,10 @@ my @labels = qw(
 
 foreach my $label (@labels)
 {
-  say $label;
+  if ($forecast =~ /"$label":\s*("([^"]+)"|(\d+))/s)
+  {
+    say "\t", $2 || $3;
+  }
 }
 
 
