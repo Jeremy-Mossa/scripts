@@ -100,7 +100,7 @@ while ($forecast =~
         || $precip > $days_data{$date_key}{precip});
 }
 
-$city = s/-/ /g;
+$city =~ s/-([a-z])/ \u$1/g;
 $city = ucfirst $city;
 print "\n";
 print "\t", "-" x 32, "\n";
@@ -125,3 +125,4 @@ for my $date_key (sort keys %days_data)
   say "\tChance: ", defined $data->{precip} ? "$data->{precip}%" : "0%";
   print "\n";
 }
+print "\t", "-" x 32, "\n\n";
