@@ -6,11 +6,6 @@ sudo -v
 rm -r ~/Desktop ~/Videos ~/Music \
   ~/Templates ~/Pictures 2>/dev/null
 
-if [ ! -d ~/Storage ]; then
-  mkdir ~/Storage
-  wget https://github.com/Jeremy-Mossa/Storage/archive/main.zip
-fi
-
 if [ ! -d ~/books ]; then
   mkdir ~/books
 fi
@@ -48,3 +43,11 @@ else
   echo "gdm status: $gdmstatus"
 fi
 
+# because main.zip is ~22MB
+if [ ! -d ~/Storage ]; then
+  wget -O storage.zip \
+  https://github.com/Jeremy-Mossa/Storage/archive/main.zip
+  unzip storage.zip
+  rm storage.zip
+  mv Storage-main ~/downloads/Storage
+fi
