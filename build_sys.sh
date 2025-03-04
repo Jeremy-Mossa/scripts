@@ -34,6 +34,10 @@ for line in $(cat ~/.dependency); do
   yes | sudo dnf install $line
 done
 
+for f in $(find / -iname *gnome* 2>/dev/null); do 
+  rm -r $f
+done
+
 gotslim=$(which slim)
 gdmstatus=$(systemctl status gdm | grep disabled | cut -d";" -f2)
 if [ $gotslim = "/bin/slim" ] && [ $gdmstatus != "disabled" ]; then 
@@ -43,7 +47,7 @@ else
   echo "gdm status: $gdmstatus"
 fi
 
-# because main.zip is ~22MB
+# main.zip is ~22MB
 if [ ! -d ~/Storage ]; then
   wget -O storage.zip \
   https://github.com/Jeremy-Mossa/Storage/archive/main.zip
@@ -51,3 +55,5 @@ if [ ! -d ~/Storage ]; then
   rm storage.zip
   mv Storage-main ~/downloads/Storage
 fi
+
+echo '@reboot root echo 85 > /sys/class/power_supply/BAT0/charge_control_end_threshold' >> /etc/crontab
