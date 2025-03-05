@@ -20,9 +20,9 @@ df=(
 
 # Alphabetical sorting of the .dependency file before sync
 # Research a more compact way to do this
-sort ~/.dependency > ~/tmp
-cat ~/tmp > ~/.dependency
-rm ~/tmp
+sort ~/.dependency > ~/tmp_dep
+cat ~/tmp_dep > ~/.dependency
+rm ~/tmp_dep
 
 cd ~
 
