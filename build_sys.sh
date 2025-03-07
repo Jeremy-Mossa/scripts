@@ -53,7 +53,7 @@ if [ ! -d ~/Storage ]; then
   https://github.com/Jeremy-Mossa/Storage/archive/main.zip
   unzip storage.zip
   rm storage.zip
-  mv Storage-main ~/downloads/Storage
+  mv Storage-main ~/Storage
 fi
 
 echo '@reboot root echo 85 > /sys/class/power_supply/BAT0/charge_control_end_threshold' >> /etc/crontab
