@@ -4,13 +4,12 @@ use warnings;
 use v5.40;
 use utf8;
 use autodie;
-use open ':std', ':encoding(UTF-8)';
 
 die "Usage: $0 <city>\nExample: $0 Dallas\n" unless @ARGV == 1;
 my $city = $ARGV[0];
 
-# use openstreetmap to find and store latitude and longitude
-# for a US city provided at the command line
+# use openstreetmap to find and store latitude and
+# longitude for a US city provided at cli
 my $geocode_url = "https://nominatim.openstreetmap.org/search?";
 my $query       = $geocode_url . "q=$city,US&format=json&limit=1";
 my $coords      = `curl -s "$query"`;
@@ -41,16 +40,9 @@ else
 }
 
 # save the forecast JSON response
-my $forecast_response = `curl -s "$forecast_url"`;
-open(my $fh, '>', 'forecast.txt') or die "Cannot open file: $!";
-print $fh $forecast_response;
-close($fh);
+my $forecast = `curl -s "$forecast_url"`;
 
-# Read JSON file
-my $filename = "forecast.txt";
-open(my $fh2, '<', $filename) or die "Cannot open file: $!";
-my $forecast = do { local $/; <$fh2> };    # Slurp entire file
-close $fh2;
+system('rm forecast.txt');
 
 my %months = (
               1  => "JAN",
@@ -120,7 +112,8 @@ for my $date_key (sort keys %days_data)
   my $formatted_date = "$data->{day_name}, $months{$month} $day$suffix";
 
   say "\t$formatted_date";
-  say "\tLow: $data->{night_temp}°   Hi: $data->{day_temp}°";
+  # say "\tLow: $data->{night_temp}°   Hi: $data->{day_temp}°";
+  say "\tLow: $data->{night_temp}   Hi: $data->{day_temp}";
   say "\t$data->{short_forecast}";
   say "\tChance: ", defined $data->{precip} ? "$data->{precip}%" : "0%";
   print "\n";
