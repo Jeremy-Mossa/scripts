@@ -1,7 +1,10 @@
 #!/bin/bash
 
-read -p "Query: " query
-echo -e "\n"
+if [ -z "$1" ]; then
+  read -p "Query: " query
+else 
+  query="$1"
+fi
 
 api_key=$(cat ~/.ssh/api_key)
 url="https://generativelanguage.googleapis.com/"
@@ -15,7 +18,8 @@ curl --silent $url$ver$key \
   "contents": [{
     "parts":[{"text": "'"$query"'"}]
     }]
-   }' >> ~/tmp/data.json
+   }' > ~/tmp/data.json
 
+echo -e "\n"
 sleep 3
 perl ~/perl/json_printer.pl
