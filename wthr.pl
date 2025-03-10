@@ -42,8 +42,6 @@ else
 # save the forecast JSON response
 my $forecast = `curl -s "$forecast_url"`;
 
-system('rm forecast.txt');
-
 my %months = (
               1  => "JAN",
               2  => "FEB",
@@ -99,7 +97,7 @@ print "\t", "-" x 32, "\n";
 say "\tWeather for $city";
 print "\t", "-" x 32, "\n";
 
-# Process and print each day
+# format and print each day
 for my $date_key (sort keys %days_data)
 {
   my $data = $days_data{$date_key};
@@ -109,7 +107,15 @@ for my $date_key (sort keys %days_data)
   my $month = $data->{month};
   my $suffix =
     $day =~ /1$/ ? "st" : $day =~ /2$/ ? "nd" : $day =~ /3$/ ? "rd" : "th";
-  my $formatted_date = "$data->{day_name}, $months{$month} $day$suffix";
+  my $formatted_date;
+  if ($data->{day_name} =~ /this/i)
+  {
+    $formatted_date = "Today, $months{$month} $day$suffix";
+  }
+  else
+  {
+    $formatted_date = "$data->{day_name}, $months{$month} $day$suffix";
+  }
 
   say "\t$formatted_date";
   # say "\tLow: $data->{night_temp}°   Hi: $data->{day_temp}°";
