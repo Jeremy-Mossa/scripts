@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mullvad-browser >/dev/null 2>/dev/null &
+mullvad-browser https://grok.com >/dev/null 2>/dev/null &
 sleep 2.5
 browser_window=$(xdotool search mullvad \
    | tail -n1)
