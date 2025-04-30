@@ -18,25 +18,28 @@ if $(adb shell dumpsys window \
   adb shell input text "071981"
 fi
 
-if $(adb shell pidof com.kabam.marvelbattle); then
+if adb shell pidof com.kabam.marvelbattle; then
   echo "MCoC already running"
 
   else
     # Start MCoC
     adb shell monkey -p com.kabam.marvelbattle 1
     sleep 1
+    adb shell pidof com.kabam.marvelbattle
 fi
 
 # How to take a screenpic without saving
 # on the android device
 # adb exec-out screencap -p > /dir/screenpic.png
 
+scrot /tmp/game.png --overwrite
 while true; do
-  if ! $(adb shell pidof com.kabam.marvelbattle); then
+  if ! adb shell pidof com.kabam.marvelbattle \
+    >/dev/null; then
     break
   fi
-  adb exec-out screencap -p /tmp/game.png
+  adb exec-out screencap -p > /tmp/game.png
   sleep 10
 done &
 
-feh -R 10 /tmp/game.png
+feh -R 10 --zoom 25 --geometry +0+0 /tmp/game.png
