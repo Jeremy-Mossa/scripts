@@ -19,3 +19,4 @@ if $(adb shell pidof com.kabam.marvelbattle); then
     # Start MCoC
     adb shell monkey -p com.kabam.marvelbattle 1
 fi
+# adb exec-out screencap -p > screenpic.png
