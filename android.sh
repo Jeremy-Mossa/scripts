@@ -19,4 +19,13 @@ if $(adb shell pidof com.kabam.marvelbattle); then
     # Start MCoC
     adb shell monkey -p com.kabam.marvelbattle 1
 fi
-# adb exec-out screencap -p > screenpic.png
+
+# How to take a screenpic without saving
+# on the android device
+# adb exec-out screencap -p > /dir/screenpic.png
+
+while true; do
+    adb exec-out screencap -p
+    sleep 3
+done | ffmpeg -framerate 1/3 -f \
+  image2pipe -i pipe: /tmp/output.mp4
