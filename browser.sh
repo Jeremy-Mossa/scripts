@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 mullvad-browser https://www.meta.ai \
   >/dev/null 2>/dev/null &
@@ -10,8 +10,8 @@ xdotool windowsize $browser_window 68% 94%
 xterm -geometry 60x53
 
 
-xdotool mousemove 517 462 
-sleep 8
+sleep 12
+xdotool mousemove 458 458 
 xdotool click 1
 sleep 1
 xdotool type "hey"
