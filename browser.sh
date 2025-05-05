@@ -21,7 +21,7 @@ xdotool mousemove 948 540 click 1
 sleep 0.25
 xdotool mousemove 852 664 click 1
 sleep 0.25
-xdotool mousemove 760 737 
+xdotool mousemove 700 500 
 sleep 0.25
 
 xdotool click --repeat 10 5
@@ -30,5 +30,7 @@ xdotool click 1
 sleep 0.25
 xdotool enter Return
 sleep 0.25
-xdotool click 1
+xdotool mousemove 730 730
 sleep 0.25
+xdotool click 1
+xdotool click 1
