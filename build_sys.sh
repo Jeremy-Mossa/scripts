@@ -133,6 +133,7 @@ echo '@reboot root echo 85 > \
 
 # find / -iname '*gnome*' -exec rm -rf {} \; 2>/dev/null
 
+chsh -s "/bin/ksh" "jbm"
 EOF
 
 
