@@ -13,6 +13,7 @@ df=(
   ".dependency"
   ".dillo/"
   ".fluxbox/"
+  ".kshrc"
   ".vimrc"
   ".xinitrc"
   ".Xresources"
