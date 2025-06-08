@@ -16,7 +16,6 @@ tickers=(
   "GOOD"   # Gladstone Commercial (REIT, industrial/office)
   "GLAD"   # Gladstone Capital (BDC, small business loans)
   "LTC"    # LTC Properties (REIT, senior housing)
-  "PEI"    # Pennsylvania REIT (retail properties)
   "GAIN"   # Gladstone Investment (BDC, buyouts)
   "HRZN"   # Horizon Technology Finance (venture loans)
   "PFLT"   # PennantPark Floating Rate Capital (BDC)
