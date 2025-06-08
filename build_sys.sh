@@ -8,6 +8,7 @@ dotfiles
 freebsd
 perl
 wallpapers
+scripts
 "
 
 # Remove default directories
@@ -69,10 +70,12 @@ git
 gnucash
 htop
 icecat
+inxi
 ksh
 libcgif
 libjpeg
 libpng
+linux-firmware
 lolcat
 mullvad-browser
 mullvad-vpn
@@ -128,7 +131,8 @@ echo '@reboot root echo 85 > \
 /sys/class/power_supply/BAT0/charge_control_end_threshold' \
 | tee -a /etc/crontab >/dev/null
 
-find / -iname '*gnome*' -exec rm -rf {} \; 2>/dev/null
+# find / -iname '*gnome*' -exec rm -rf {} \; 2>/dev/null
 
 EOF
+
 
