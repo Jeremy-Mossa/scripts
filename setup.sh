@@ -4,11 +4,9 @@ DIRS="
 books
 C
 documents
-dotfiles
 freebsd
 perl
 wallpapers
-scripts
 "
 
 # Remove default directories

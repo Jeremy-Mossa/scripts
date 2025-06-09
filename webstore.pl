@@ -34,8 +34,6 @@ my $cmd = "$browser_bin --no-remote " .
 system($cmd) == 0 
   or die "Failed to execute icecat $?\n";
 
-
-
 sleep 15;
  
 system('xdotool mousemove 777 127');
