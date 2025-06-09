@@ -3,6 +3,12 @@ use strict;
 use warnings;
 use File::Temp qw(tempdir);
 
+# Check if Xvfb is running, start if not
+system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1080x24 >/dev/null 2>&1 &");
+sleep 5;  # Increased sleep for Fedora stability
+
+# Set DISPLAY environment variable
+$ENV{DISPLAY} = ":99";
 
 my $username_file = "$ENV{HOME}/.ssh/mcoc_username";
 open(my $username_fh, '<', $username_file) 
@@ -19,39 +25,36 @@ chomp($password) if defined $password;
 close($password_fh);
 
 my $temp_profile = tempdir(CLEANUP => 1);
-my $firefox_bin = "/usr/bin/firefox";
+my $browser_bin = "/bin/icecat";
 my $url = "https://store.playcontestofchampions.com";
-my $cmd = "$firefox_bin --no-remote " .
+my $cmd = "$browser_bin --no-remote " .
   "--profile \"$temp_profile\" " .
   "--private-window \"$url\" " .
   ">/dev/null 2>&1 &";
 system($cmd) == 0 
-  or die "Failed to execute Firefox: $?\n";
+  or die "Failed to execute icecat $?\n";
 
-sleep 6;
-system('xdotool search --onlyvisible --name ' .
-  '"Firefox" set_window --name "mcoc"');
-system('xdotool search --onlyvisible --name ' .
-  '"mcoc" windowactivate key ctrl+alt+f');
-sleep 3;
 
-system('xdotool mousemove 1700 170');
+
+sleep 15;
+ 
+system('xdotool mousemove 777 127');
 system('xdotool click 1');
 sleep 1;
-system('xdotool mousemove 970 580');
+system('xdotool mousemove 500 540');
 system('xdotool click 1');
-sleep 6;
-system('xdotool mousemove 950 630');
+sleep 12;
+system('xdotool mousemove 500 580');
 system('xdotool click 1');
 sleep 0.25;
 system("xdotool type '$username'");
-system('xdotool mousemove 950 705');
+system('xdotool mousemove 500 660');
 system('xdotool click 1');
 sleep 0.25;
 system("xdotool type '$password'");
-system('xdotool mousemove 960 820');
+system('xdotool mousemove 500 770');
 system('xdotool click 1');
-sleep 10;
+sleep 15;
 system("xdotool key Ctrl+Shift+k");
 
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
@@ -62,3 +65,7 @@ foreach my $char (split //, $command) {
 }
 system("xdotool key Return");
 sleep 1;
+system('scrot /home/jbm/pics/webstore.png');
+
+# Kill Xvfb
+system("pkill Xvfb");
