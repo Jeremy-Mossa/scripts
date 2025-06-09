@@ -5,7 +5,7 @@ use File::Temp qw(tempdir);
 
 # Check if Xvfb is running, start if not
 system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1080x24 >/dev/null 2>&1 &");
-sleep 5;  # Increased sleep for Fedora stability
+sleep 5;
 
 # Set DISPLAY environment variable
 $ENV{DISPLAY} = ":99";
