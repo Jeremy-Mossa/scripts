@@ -10,7 +10,7 @@ sleep 5;
 # Set DISPLAY environment variable
 $ENV{DISPLAY} = ":99";
 
-my $username_file = "$ENV{HOME}/.ssh/mcoc_username";
+my $username_file = "$ENV{HOME}/.ssh/mcoc_username2";
 open(my $username_fh, '<', $username_file) 
   or die "Cannot open $username_file: $!";
 my $username = <$username_fh>;
@@ -35,33 +35,26 @@ system($cmd) == 0
   or die "Failed to execute icecat $?\n";
 
 sleep 15;
-system('scrot /home/jbm/pics/pic.png');
  
 system('xdotool mousemove 777 127');
 system('xdotool click 1');
 sleep 1;
-system('scrot /home/jbm/pics/pic.png');
 system('xdotool mousemove 500 540');
 system('xdotool click 1');
 sleep 12;
-system('scrot /home/jbm/pics/pic.png');
 system('xdotool mousemove 500 580');
 system('xdotool click 1');
 sleep 0.25;
-system('scrot /home/jbm/pics/pic.png');
 system("xdotool type '$username'");
 system('xdotool mousemove 500 660');
 system('xdotool click 1');
 sleep 0.25;
-system('scrot /home/jbm/pics/pic.png');
 system("xdotool type '$password'");
 system('xdotool mousemove 500 770');
 system('xdotool click 1');
 sleep 15;
-system('scrot /home/jbm/pics/pic.png');
 system("xdotool key Ctrl+Shift+k");
 
-system('scrot /home/jbm/pics/pic.png');
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
 sleep 1;
 foreach my $char (split //, $command) {
