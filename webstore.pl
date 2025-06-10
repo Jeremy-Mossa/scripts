@@ -4,11 +4,11 @@ use warnings;
 use File::Temp qw(tempdir);
 
 # Check if Xvfb is running, start if not
-system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1080x24 >/dev/null 2>&1 &");
+system("pidof Xvfb || Xvfb :98 -ac -screen 0 1920x1080x24 >/dev/null 2>&1 &");
 sleep 5;
 
 # Set DISPLAY environment variable
-$ENV{DISPLAY} = ":99";
+$ENV{DISPLAY} = ":98";
 
 my $username_file = "$ENV{HOME}/.ssh/mcoc_username";
 open(my $username_fh, '<', $username_file) 
@@ -35,34 +35,26 @@ system($cmd) == 0
   or die "Failed to execute firefox $?\n";
 
 sleep 15;
-system('scrot /home/jbm/pics/pic.png');
  
 system('xdotool mousemove 1050 150');
 system('xdotool click 1');
 sleep 1;
-system('scrot /home/jbm/pics/pic.png');
 system('xdotool mousemove 650 540');
 system('xdotool click 1');
 sleep 12;
-system('scrot /home/jbm/pics/pic.png');
 system('xdotool mousemove 650 590');
 system('xdotool click 1');
 sleep 0.25;
-system('scrot /home/jbm/pics/pic.png');
 system("xdotool type '$username'");
 system('xdotool mousemove 650 690');
 system('xdotool click 1');
 sleep 0.25;
-system('scrot /home/jbm/pics/pic.png');
 system("xdotool type '$password'");
 system('xdotool mousemove 650 800');
 system('xdotool click 1');
-system('scrot /home/jbm/pics/pic.png');
 sleep 15;
-system('scrot /home/jbm/pics/pic.png');
 system("xdotool key Ctrl+Shift+k");
 
-system('scrot /home/jbm/pics/pic.png');
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
 sleep 1;
 foreach my $char (split //, $command) {

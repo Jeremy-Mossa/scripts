@@ -25,32 +25,32 @@ chomp($password) if defined $password;
 close($password_fh);
 
 my $temp_profile = tempdir(CLEANUP => 1);
-my $browser_bin = "/bin/icecat";
+my $browser_bin = "/bin/firefox";
 my $url = "https://store.playcontestofchampions.com";
 my $cmd = "$browser_bin --no-remote " .
   "--profile \"$temp_profile\" " .
   "--private-window \"$url\" " .
   ">/dev/null 2>&1 &";
 system($cmd) == 0 
-  or die "Failed to execute icecat $?\n";
+  or die "Failed to execute firefox $?\n";
 
 sleep 15;
  
-system('xdotool mousemove 777 127');
+system('xdotool mousemove 1050 150');
 system('xdotool click 1');
 sleep 1;
-system('xdotool mousemove 500 540');
+system('xdotool mousemove 650 540');
 system('xdotool click 1');
 sleep 12;
-system('xdotool mousemove 500 580');
+system('xdotool mousemove 650 590');
 system('xdotool click 1');
 sleep 0.25;
 system("xdotool type '$username'");
-system('xdotool mousemove 500 660');
+system('xdotool mousemove 650 690');
 system('xdotool click 1');
 sleep 0.25;
 system("xdotool type '$password'");
-system('xdotool mousemove 500 770');
+system('xdotool mousemove 650 800');
 system('xdotool click 1');
 sleep 15;
 system("xdotool key Ctrl+Shift+k");
