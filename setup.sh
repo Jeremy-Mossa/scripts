@@ -84,6 +84,7 @@ perl-Gtk3
 perl-HTTP-Tiny
 perl-JSON-PP
 prename
+qmake
 redshift
 rtorrent
 slim
