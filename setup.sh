@@ -3,6 +3,7 @@
 DIRS="
 books
 C
+C++
 documents
 freebsd
 perl
