@@ -28,7 +28,7 @@ my $cmd = "$firefox_bin --no-remote " .
 system($cmd) == 0 
   or die "Failed to execute Firefox: $?\n";
 
-sleep 6;
+sleep 7;
 system('xdotool search --onlyvisible --name ' .
   '"Firefox" set_window --name "Grok_Login"');
 system('xdotool search --onlyvisible --name ' .
