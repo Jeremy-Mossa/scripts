@@ -20,7 +20,7 @@ close($password_fh);
 
 my $temp_profile = tempdir(CLEANUP => 1);
 my $firefox_bin = "/usr/bin/firefox";
-my $url = "https://grok.com";
+my $url = "https://accounts.x.ai/sign-in";
 my $cmd = "$firefox_bin --no-remote " .
   "--profile \"$temp_profile\" " .
   "--private-window \"$url\" " .
@@ -28,16 +28,13 @@ my $cmd = "$firefox_bin --no-remote " .
 system($cmd) == 0 
   or die "Failed to execute Firefox: $?\n";
 
-sleep 7;
+sleep 6;
 system('xdotool search --onlyvisible --name ' .
   '"Firefox" set_window --name "Grok_Login"');
 system('xdotool search --onlyvisible --name ' .
   '"Grok_Login" windowactivate key ctrl+alt+f');
 sleep 1.5;
 
-system('xdotool mousemove 1870 180');
-system('xdotool click 1');
-sleep 4;
 system('xdotool mousemove 480 630');
 system('xdotool click 1');
 sleep 4;
@@ -49,4 +46,7 @@ system("xdotool type '$password'");
 system('xdotool mousemove 1400 730');
 system('xdotool click 1');
 system('xdotool mousemove 430 50');
+system('xdotool click 1');
+sleep 9;
+system('xdotool mousemove 43 995');
 system('xdotool click 1');
