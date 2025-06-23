@@ -45,24 +45,30 @@ system($cmd) == 0
 
 sleep 15;
  
-system('xdotool mousemove 1050 150');
+system('xdotool mousemove 1060 150');
 system('xdotool click 1');
 sleep 1;
+system('scrot /home/jbm/pics/pic.png');
 system('xdotool mousemove 650 540');
 system('xdotool click 1');
 sleep 12;
+system('scrot /home/jbm/pics/pic.png');
 system('xdotool mousemove 650 590');
 system('xdotool click 1');
 sleep 0.25;
+system('scrot /home/jbm/pics/pic.png');
 system("xdotool type '$username'");
 system('xdotool mousemove 650 690');
 system('xdotool click 1');
 sleep 0.25;
+system('scrot /home/jbm/pics/pic.png');
 system("xdotool type '$password'");
 system('xdotool mousemove 650 800');
 system('xdotool click 1');
+system('scrot /home/jbm/pics/pic.png');
 sleep 15;
 system("xdotool key Ctrl+Shift+k");
+system('scrot /home/jbm/pics/pic.png');
 
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
 sleep 1;
