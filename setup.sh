@@ -28,6 +28,9 @@ fi
 if [ ! -d ~/dotfiles ]; then
   git clone https://github.com/Jeremy-Mossa/dotfiles ~/dotfiles
 fi
+if [ ! -d ~/flutter ]; then
+  git clone https://github.com/flutter/flutter.git -b stable ~/flutter
+fi
 
 # Create symbolic link if it doesn't exist
 if [ ! -e ~/downloads ]; then
