@@ -90,6 +90,7 @@ perl-HTTP-Tiny
 perl-JSON-PP
 prename
 qmake
+rclone
 redshift
 rtorrent
 slim
