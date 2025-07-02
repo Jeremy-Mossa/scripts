@@ -68,6 +68,7 @@ fluxbox
 fzf
 gcc
 giflib
+gimp
 git
 gnucash
 htop
