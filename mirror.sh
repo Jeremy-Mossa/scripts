@@ -177,7 +177,7 @@ def match_template(template_path, button_name):
     h, w = template.shape[:2]
     result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-    if max_val >= 0.8:
+    if max_val >= 0.7:
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
         debug_img = screenshot.copy()
