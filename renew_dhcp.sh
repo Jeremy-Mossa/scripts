@@ -1,9 +1,6 @@
 #!/bin/ksh
 # POSIX-compliant ksh script to renew DHCP lease for connected network interface
 
-# Configuration
-LOGFILE="/var/log/dhcp_renew.log"
-
 # Function to find connected interface
 find_connected_interface() {
     # Use ifconfig to list interfaces with an inet address
@@ -51,17 +48,8 @@ INTERFACE=$(find_connected_interface)
 # Check if an interface was found
 if [ -n "$INTERFACE" ]; then
     # Release and renew DHCP lease using dhclient
-    /usr/bin/sudo /sbin/dhclient -r "$INTERFACE" >> "$LOGFILE" 2>&1
+    /usr/bin/sudo /sbin/dhclient -r "$INTERFACE" >/dev/null 2>&1
     if [ $? -eq 0 ]; then
-        /usr/bin/sudo /sbin/dhclient "$INTERFACE" >> "$LOGFILE" 2>&1
-        if [ $? -eq 0 ]; then
-            echo "$(date): Successfully renewed DHCP lease for $INTERFACE" >> "$LOGFILE"
-        else
-            echo "$(date): Failed to renew DHCP lease for $INTERFACE" >> "$LOGFILE"
-        fi
-    else
-        echo "$(date): Failed to release DHCP lease for $INTERFACE" >> "$LOGFILE"
+        /usr/bin/sudo /sbin/dhclient "$INTERFACE" >/dev/null 2>&1
     fi
-else
-    echo "$(date): No connected interface found" >> "$LOGFILE"
 fi
