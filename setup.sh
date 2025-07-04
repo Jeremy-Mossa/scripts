@@ -47,9 +47,11 @@ if [ ! -d ~/Storage ]; then
   mv Storage-main ~/Storage
 fi
 
-su <<EOF
+if [ ! -d ~/Downloads/scrcpy ]; then
+  git clone https://github.com/Genymobile/scrcpy.git ~/Downloads/scrcpy
+fi
 
-dnf copr enable zeno/scrcpy
+su <<EOF
 
 PKG="
 aalib
@@ -63,6 +65,9 @@ dkms
 fastboot
 fastfetch
 feh
+ffmpeg
+ffmpeg-devel
+ffmpeg-libs
 figlet
 firefox-esr
 firejail
@@ -76,12 +81,15 @@ gnucash
 htop
 icecat
 inxi
+java-17-openjdk-devel
 ksh
 libcgif
 libjpeg
 libpng
+libusb1-devel
 linux-firmware
 lolcat
+meson
 mullvad-browser
 mullvad-vpn
 mupdf
@@ -95,7 +103,7 @@ qmake
 rclone
 redshift
 rtorrent
-scrcpy
+SDL2-devel
 slim
 source-foundry-hack-fonts
 ssh
