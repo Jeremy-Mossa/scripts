@@ -163,9 +163,9 @@ random_click() {
         if [ -f "/tmp/autoplay_cooldown" ]; then
             last_click=$(cat "/tmp/autoplay_cooldown")
             elapsed=$((current_time - last_click))
-            if [ "$elapsed" -lt 1800 ]; then
+            if [ "$elapsed" -lt 2040 ]; then
                 autoplay_search=0
-                echo "Autoplay in cooldown (elapsed: $elapsed seconds, remaining: $((1800 - elapsed)) seconds)"
+                echo "Autoplay in cooldown (elapsed: $elapsed seconds, remaining: $((2040 - elapsed)) seconds)"
             fi
         fi
         
