@@ -49,6 +49,8 @@ fi
 
 su <<EOF
 
+dnf copr enable zeno/scrcpy
+
 PKG="
 aalib
 acpi
@@ -93,6 +95,7 @@ qmake
 rclone
 redshift
 rtorrent
+scrcpy
 slim
 source-foundry-hack-fonts
 ssh
