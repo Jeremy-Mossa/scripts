@@ -99,6 +99,8 @@ perl-Gtk3
 perl-HTTP-Tiny
 perl-JSON-PP
 prename
+python3-numpy
+python3-opencv
 qmake
 rclone
 redshift
