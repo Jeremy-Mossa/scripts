@@ -4,7 +4,7 @@
 pid_file="/tmp/mirror.sh.pid"
 if [ -f "$pid_file" ]; then
     old_pid=$(cat "$pid_file")
-    if ps -p "$old_pid" > /dev/null 2>&1; then
+    if ps -p "$old_pid" >/dev/null 2>&1; then
         echo "Script is already running with PID $old_pid. Exiting."
         exit 1
     fi
@@ -24,7 +24,10 @@ cleanup() {
     pkill -f "adb logcat" 2>/dev/null
     pkill -f "python3.*match_template" 2>/dev/null
     adb kill-server 2>/dev/null
-    rm -f "$HOME/pics/scrcpy_screenshot.png" "$HOME/pics/matched_area.png" "$HOME/tmp/tmp.png" "$HOME/tmp/tmp1.png" "$HOME/tmp/tmp2.png" "$HOME/tmp/tmp3.png" "/tmp/autoplay_cooldown" "$pid_file"
+    rm -f "$HOME/pics/scrcpy_screenshot.png" \
+      "$HOME/pics/matched_area.png" \
+      "$HOME/tmp/tmp.png" "/tmp/autoplay_cooldown" \
+      "$pid_file"
     exit 0
 }
 
@@ -35,7 +38,8 @@ trap cleanup INT TERM EXIT
 adb start-server || { echo "Failed to start adb server"; exit 1; }
 
 # Set Android device brightness to just above 0 (10/255)
-adb shell settings put system screen_brightness 10 || { echo "Failed to set device brightness"; }
+adb shell settings put system screen_brightness 10 \
+  || { echo "Failed to set device brightness"; }
 
 # Clear adb logs every 10 seconds in the background
 (
@@ -56,7 +60,9 @@ fi
 export DISPLAY=:99
 
 # Start scrcpy with specified settings
-scrcpy --window-title="Android Automation" --max-size=800 --max-fps=10 --no-audio --window-borderless &
+scrcpy --window-title="Android Automation" \
+  --max-size=800 --max-fps=10 \
+  --no-audio --window-borderless &
 scrcpy_pid=$!
 
 # Wait for scrcpy window to open
@@ -165,7 +171,8 @@ random_click() {
             elapsed=$((current_time - last_click))
             if [ "$elapsed" -lt 2040 ]; then
                 autoplay_search=0
-                echo "Autoplay in cooldown (elapsed: $elapsed seconds, remaining: $((2040 - elapsed)) seconds)"
+                echo -n "Autoplay in cooldown (elapsed: "
+                echo "$elapsed seconds, remaining: $((2040 - elapsed)) seconds)"
             fi
         fi
         
@@ -230,7 +237,8 @@ print(f"{replay_result};{autoplay_result}")
             height=$(echo "$replay_result" | cut -d',' -f6)
             x_max=$((x + width))
             y_max=$((y + height))
-            echo "Replay button found at ($x, $y), size ($width, $height), confidence=$confidence"
+            echo -n "Replay button found at ($x, $y) "
+            echo "size ($width, $height), confidence=$confidence"
             echo "Saved matched area to $HOME/pics/matched_area.png"
             random_click $x $y $x_max $y_max "replay"
         fi
@@ -250,7 +258,8 @@ print(f"{replay_result};{autoplay_result}")
             height=$(echo "$autoplay_result" | cut -d',' -f6)
             x_max=$((x + width))
             y_max=$((y + height))
-            echo "Autoplay button found at ($x, $y), size ($width, $height), confidence=$confidence"
+            echo -n "Autoplay button found at ($x, $y) "
+            echo "size ($width, $height), confidence=$confidence"
             echo "Saved matched area to $HOME/pics/matched_area.png"
             random_click $x $y $x_max $y_max "autoplay"
             date +%s > "/tmp/autoplay_cooldown"

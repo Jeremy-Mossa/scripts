@@ -118,6 +118,7 @@ toilet
 vim
 vimb
 vlc
+waydroid
 xclip
 xdotool
 xlockmore
@@ -135,6 +136,8 @@ yt-dlp
 for package in $PKG; do
   yes | dnf install "$package"
 done
+
+waydroid init -s GAPPS -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor
 
 # Configure display manager
 if command -v slim > /dev/null && ! systemctl status gdm | grep -q "disabled"; then
