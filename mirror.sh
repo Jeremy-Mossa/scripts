@@ -19,7 +19,7 @@ cleanup() {
     fi
     pkill -P $$ 2>/dev/null
     pkill -f "adb logcat" 2>/dev/null
-    pkill -f "import" 2>/dev/null
+    pkill -f "scrot" 2>/dev/null
     pkill -f "python3.*match_template" 2>/dev/null
     adb kill-server 2>/dev/null
     rm -f "$HOME/pics/scrcpy_screenshot.png" "$HOME/pics/matched_area.png" "/tmp/autoplay_cooldown" "$pid_file"
@@ -32,6 +32,9 @@ trap cleanup INT TERM EXIT
 # Start adb server
 adb start-server || { echo "Failed to start adb server"; exit 1; }
 
+# Set Android device brightness to just above 0 (10/255)
+adb shell settings put system screen_brightness 10 || { echo "Failed to set device brightness"; }
+
 # Clear adb logs every 10 seconds in the background
 (
     while true; do
@@ -41,14 +44,14 @@ adb start-server || { echo "Failed to start adb server"; exit 1; }
 ) &
 
 # Start scrcpy with specified settings
-scrcpy --window-title="Android Automation" --max-size=800 --max-fps=10 --no-audio &
+scrcpy --window-title="Android Automation" --max-size=800 --max-fps=10 --no-audio --window-borderless &
 
 # Store scrcpy PID
 scrcpy_pid=$!
 
 # Wait for scrcpy window to open
 echo "Waiting for scrcpy window..."
-timeout=30
+timeout=60
 count=0
 while [ $count -lt $timeout ]; do
     window_id=$(xdotool search --name "Android Automation" 2>/dev/null)
@@ -70,8 +73,8 @@ if [ $count -eq $timeout ]; then
     cleanup
 fi
 
-# Raise and ensure window is mapped
-xdotool windowraise "$window_id" 2>/dev/null
+# Move scrcpy window to top-left (0,0) and ensure it’s mapped
+xdotool windowmove "$window_id" 0 0 2>/dev/null
 xdotool windowmap "$window_id" 2>/dev/null
 
 # Function to perform a random click within boundaries
@@ -125,7 +128,8 @@ random_click() {
         retry_count=0
         max_retries=3
         while [ $retry_count -lt $max_retries ]; do
-            import -window "$window_id" "$HOME/pics/scrcpy_screenshot.png"
+            xdotool windowraise "$window_id" 2>/dev/null
+            scrot -u -b "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
             if [ -f "$HOME/pics/scrcpy_screenshot.png" ]; then
                 echo "Screenshot captured"
                 break
@@ -136,15 +140,8 @@ random_click() {
         done
         if [ $retry_count -eq $max_retries ]; then
             echo "Giving up after $max_retries failed screenshot attempts"
-            # Fallback: try name-based capture
-            import -window "Android Automation" "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
-            if [ -f "$HOME/pics/scrcpy_screenshot.png" ]; then
-                echo "Screenshot captured using fallback method"
-            else
-                echo "Fallback screenshot capture also failed"
-                sleep 20
-                continue
-            fi
+            sleep 20
+            continue
         fi
         
         # Check autoplay cooldown
@@ -180,14 +177,14 @@ def match_template(template_path, button_name):
     h, w = template.shape[:2]
     result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-    if max_val >= 0.9:
+    if max_val >= 0.8:
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
         debug_img = screenshot.copy()
         cv2.rectangle(debug_img, top_left, bottom_right, (0, 255, 0), 2)
         cv2.imwrite("'$HOME/pics/matched_area.png'", debug_img)
         return f"{top_left[0]},{top_left[1]},{max_val},{button_name},{w},{h}"
-    return "No match"
+    return f"No match, confidence={max_val}"
 
 # Match replay.png
 replay_result = match_template("'$HOME/pics/replay.png'", "replay")
@@ -210,7 +207,7 @@ print(f"{replay_result};{autoplay_result}")
         # Process replay result
         replay_result=$(echo "$match_result" | cut -d';' -f1)
         if echo "$replay_result" | grep -q "No match"; then
-            echo "No replay button match found (confidence < 0.9)"
+            echo "$replay_result"
         else
             x=$(echo "$replay_result" | cut -d',' -f1)
             y=$(echo "$replay_result" | cut -d',' -f2)
@@ -229,7 +226,7 @@ print(f"{replay_result};{autoplay_result}")
         autoplay_result=$(echo "$match_result" | cut -d';' -f2)
         if echo "$autoplay_result" | grep -q "No match"; then
             if [ "$autoplay_search" -eq 1 ]; then
-                echo "No autoplay button match found (confidence < 0.9)"
+                echo "$autoplay_result"
             fi
         else
             x=$(echo "$autoplay_result" | cut -d',' -f1)
