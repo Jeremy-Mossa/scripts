@@ -1,5 +1,41 @@
 #!/bin/ksh
 
+# Check if script is already running
+if [ -f /tmp/mirror.sh.pid ]; then
+    old_pid=$(cat /tmp/mirror.sh.pid)
+    if ps -p "$old_pid" > /dev/null; then
+        echo "Script is already running with PID $old_pid. Exiting."
+        exit 1
+    fi
+fi
+
+# Store current PID
+echo $$ > /tmp/mirror.sh.pid
+
+# Function to clean up all processes
+cleanup() {
+    # Kill scrcpy and its child processes
+    if [ -n "$scrcpy_pid" ]; then
+        kill "$scrcpy_pid" 2>/dev/null
+    fi
+    
+    # Kill background loops and related processes
+    pkill -P $$ 2>/dev/null
+    pkill -f "adb logcat" 2>/dev/null
+    pkill -f "import" 2>/dev/null
+    pkill -f "compare" 2>/dev/null
+    adb kill-server 2>/dev/null
+    
+    # Clean up screenshot and PID file
+    rm -f ~/pics/scrcpy_screenshot.png
+    rm -f /tmp/mirror.sh.pid
+    
+    exit 0
+}
+
+# Set up trap for cleanup on exit
+trap cleanup INT TERM EXIT
+
 # Start adb server
 adb start-server
 
@@ -12,65 +48,90 @@ adb start-server
 ) &
 
 # Start scrcpy with specified settings
-# --max-fps=10 for 10 frames refresh
-# --no-audio to disable sound
 scrcpy --max-size=720 --max-fps=10 --no-audio &
 
 # Store scrcpy PID
 scrcpy_pid=$!
 
+# Wait for scrcpy window to open
+sleep 5
+
+# Raise scrcpy window (titled "CPH2611") initially
+xdotool search --name "CPH2611" windowraise
+
 # Function to perform a random click within boundaries
 random_click() {
-    local x_min=$1
-    local y_min=$2
-    local x_max=$3
-    local y_max=$4
+    x_min=$1
+    y_min=$2
+    x_max=$3
+    y_max=$4
+    window_id=$5
     
     # Generate random x and y within boundaries
-    local x=$((x_min + RANDOM % (x_max - x_min + 1)))
-    local y=$((y_min + RANDOM % (y_max - y_min + 1)))
+    x=$((x_min + RANDOM % (x_max - x_min + 1)))
+    y=$((y_min + RANDOM % (y_max - y_min + 1)))
     
-    # Perform the click using adb
-    adb shell input tap $x $y
+    # Get window geometry (position on desktop)
+    geometry=$(xdotool getwindowgeometry --shell "$window_id")
+    win_x=$(echo "$geometry" | grep X= | cut -d= -f2)
+    win_y=$(echo "$geometry" | grep Y= | cut -d= -f2)
+    
+    # Adjust coordinates to desktop (add window position)
+    desktop_x=$((win_x + x))
+    desktop_y=$((win_y + y))
+    
+    # Perform click using xdotool
+    echo "Clicking at desktop ($desktop_x, $desktop_y) for window-relative ($x, $y)"
+    xdotool mousemove "$desktop_x" "$desktop_y" click 1
 }
 
 # Search for button every 20 seconds in the background
 (
     while true; do
-        # Capture scrcpy window (adjust window title if needed)
-        scrot -u -b ~/pics/scrcpy_screenshot.png
-        
-        # Use ImageMagick compare to find replay.png in screenshot
-        # Output format: x,y,width,height
-        match=$(compare -metric AE -subimage-search ~/pics/scrcpy_screenshot.png ~/pics/replay.png null: 2>&1 | grep -o '[0-9]*,[0-9]*')
-        
-        if [ -n "$match" ]; then
-            # Extract x,y coordinates
-            x=$(echo "$match" | cut -d',' -f1)
-            y=$(echo "$match" | cut -d',' -f2)
-            
-            # Get button dimensions from button.png
-            button_size=$(identify -format "%w,%h" ~/pics/replay.png)
-            width=$(echo "$button_size" | cut -d',' -f1)
-            height=$(echo "$button_size" | cut -d',' -f2)
-            
-            # Calculate boundaries
-            x_max=$((x + width))
-            y_max=$((y + height))
-            
-            # Perform random click within button boundaries
-            random_click $x $y $x_max $y_max
-        fi
-        
-        # Clean up screenshot
+        # Clean up previous screenshot
         rm -f ~/pics/scrcpy_screenshot.png
+        
+        # Find scrcpy window
+        window_id=$(xdotool search --name "CPH2611")
+        if [ -n "$window_id" ]; then
+            # Capture window using ImageMagick import (works on non-visible windows)
+            import -window "$window_id" ~/pics/scrcpy_screenshot.png
+            if [ -f ~/pics/scrcpy_screenshot.png ]; then
+                echo "Screenshot captured"
+                
+                # Use ImageMagick compare with 25% fuzz for 95% similarity
+                match=$(compare -metric AE -fuzz 5% -subimage-search ~/pics/scrcpy_screenshot.png ~/pics/replay.png null: 2>&1 | grep -o '[0-9]*,[0-9]*')
+                
+                if [ -n "$match" ]; then
+                    # Extract x,y coordinates
+                    x=$(echo "$match" | cut -d',' -f1)
+                    y=$(echo "$match" | cut -d',' -f2)
+                    
+                    # Get button dimensions from replay.png
+                    button_size=$(identify -format "%w,%h" ~/pics/replay.png)
+                    width=$(echo "$button_size" | cut -d',' -f1)
+                    height=$(echo "$button_size" | cut -d',' -f2)
+                    
+                    # Calculate boundaries
+                    x_max=$((x + width))
+                    y_max=$((y + height))
+                    
+                    # Perform random click
+                    echo "Button found at ($x, $y), size ($width, $height)"
+                    random_click $x $y $x_max $y_max "$window_id"
+                else
+                    echo "No button match found"
+                fi
+            else
+                echo "Failed to capture screenshot"
+            fi
+        else
+            echo "Scrcpy window not found"
+        fi
         
         sleep 20
     done
 ) &
-
-# Trap signals to clean up
-trap 'kill "$scrcpy_pid" 2>/dev/null; killall scrot compare 2>/dev/null; exit 0' INT TERM
 
 # Wait for scrcpy to exit
 wait "$scrcpy_pid"
