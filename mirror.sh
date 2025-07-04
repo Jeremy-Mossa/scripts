@@ -17,12 +17,14 @@ cleanup() {
     if [ -n "$scrcpy_pid" ]; then
         kill "$scrcpy_pid" 2>/dev/null
     fi
+    if [ -n "$xvfb_pid" ]; then
+        kill "$xvfb_pid" 2>/dev/null
+    fi
     pkill -P $$ 2>/dev/null
     pkill -f "adb logcat" 2>/dev/null
-    pkill -f "scrot" 2>/dev/null
     pkill -f "python3.*match_template" 2>/dev/null
     adb kill-server 2>/dev/null
-    rm -f "$HOME/pics/scrcpy_screenshot.png" "$HOME/pics/matched_area.png" "/tmp/autoplay_cooldown" "$pid_file"
+    rm -f "$HOME/pics/scrcpy_screenshot.png" "$HOME/pics/matched_area.png" "$HOME/tmp/tmp.png" "$HOME/tmp/tmp1.png" "$HOME/tmp/tmp2.png" "$HOME/tmp/tmp3.png" "/tmp/autoplay_cooldown" "$pid_file"
     exit 0
 }
 
@@ -43,11 +45,36 @@ adb shell settings put system screen_brightness 10 || { echo "Failed to set devi
     done
 ) &
 
+# Start Xvfb
+Xvfb :99 -screen 0 800x1280x24 &
+xvfb_pid=$!
+sleep 1  # Wait for Xvfb to start
+if ! ps -p "$xvfb_pid" > /dev/null; then
+    echo "Failed to start Xvfb"
+    cleanup
+fi
+export DISPLAY=:99
+
+# Take tmp1.png after Xvfb starts
+scrot -u "$HOME/tmp/tmp1.png" 2>/dev/null
+if [ -f "$HOME/tmp/tmp1.png" ]; then
+    echo "Captured tmp1.png after Xvfb start"
+else
+    echo "Failed to capture tmp1.png"
+fi
+
 # Start scrcpy with specified settings
 scrcpy --window-title="Android Automation" --max-size=800 --max-fps=10 --no-audio --window-borderless &
-
-# Store scrcpy PID
 scrcpy_pid=$!
+
+# Take tmp2.png after scrcpy starts
+sleep 1
+scrot -u "$HOME/tmp/tmp2.png" 2>/dev/null
+if [ -f "$HOME/tmp/tmp2.png" ]; then
+    echo "Captured tmp2.png after scrcpy start"
+else
+    echo "Failed to capture tmp2.png"
+fi
 
 # Wait for scrcpy window to open
 echo "Waiting for scrcpy window..."
@@ -73,44 +100,49 @@ if [ $count -eq $timeout ]; then
     cleanup
 fi
 
-# Move scrcpy window to top-left (0,0) and ensure it’s mapped
-xdotool windowmove "$window_id" 0 0 2>/dev/null
-xdotool windowmap "$window_id" 2>/dev/null
+# Take tmp3.png after window is found
+scrot -u "$HOME/tmp/tmp3.png" 2>/dev/null
+if [ -f "$HOME/tmp/tmp3.png" ]; then
+    echo "Captured tmp3.png after window found"
+else
+    echo "Failed to capture tmp3.png"
+fi
 
-# Function to perform a random click within boundaries
+# Function to perform a random click using xdotool
 random_click() {
     x_min=$1
     y_min=$2
     x_max=$3
     y_max=$4
-    window_id=$5
-    button_name=$6
+    button_name=$5
     
-    # Generate random x within full x-range
+    # Generate random coordinates
     x=$((x_min + RANDOM % (x_max - x_min + 1)))
-    
-    # Generate random y: bottom 50% for autoplay, full range for replay
     height=$((y_max - y_min))
     if [ "$button_name" = "autoplay" ]; then
-        y_start=$((y_min + height / 2))  # Start at middle of rectangle
-        y_range=$((y_max - y_start + 1)) # Range from middle to bottom
+        y_start=$((y_min + height / 2))
+        y_range=$((y_max - y_start + 1))
         y=$((y_start + RANDOM % y_range))
     else
         y=$((y_min + RANDOM % (y_max - y_min + 1)))
     fi
     
-    # Perform click using xdotool directly at the coordinates
+    # Perform click
     echo "Clicking $button_name at desktop ($x, $y)"
     xdotool mousemove "$x" "$y" click 1 2>/dev/null
 }
 
-# Search for buttons every 20 seconds in the background
+# Search for buttons every 20 seconds and save screenshot every minute
 (
+    last_tmp_screenshot=0
     while true; do
+        # Clean up previous bootup screenshots
+        rm -f "$HOME/tmp/tmp1.png" "$HOME/tmp/tmp2.png" "$HOME/tmp/tmp3.png"
+        
         # Clean up previous screenshot and matched area
         rm -f "$HOME/pics/scrcpy_screenshot.png" "$HOME/pics/matched_area.png"
         
-        # Find scrcpy window
+        # Ensure scrcpy window exists
         window_id=$(xdotool search --name "Android Automation" 2>/dev/null)
         if [ -z "$window_id" ]; then
             window_id=$(xdotool search --name "CPH2611" 2>/dev/null)
@@ -121,22 +153,18 @@ random_click() {
             continue
         fi
         
-        # Ensure window is mapped
-        xdotool windowmap "$window_id" 2>/dev/null
-        
-        # Try capturing screenshot with retries
+        # Capture screenshot using scrot
         retry_count=0
         max_retries=3
         while [ $retry_count -lt $max_retries ]; do
-            xdotool windowraise "$window_id" 2>/dev/null
-            scrot -u -b "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
+            scrot -u "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
             if [ -f "$HOME/pics/scrcpy_screenshot.png" ]; then
                 echo "Screenshot captured"
                 break
             fi
             echo "Failed to capture screenshot (attempt $((retry_count + 1))/$max_retries)"
             retry_count=$((retry_count + 1))
-            sleep 2
+            sleep 1
         done
         if [ $retry_count -eq $max_retries ]; then
             echo "Giving up after $max_retries failed screenshot attempts"
@@ -144,11 +172,18 @@ random_click() {
             continue
         fi
         
+        # Save screenshot to ~/tmp/tmp.png every minute
+        current_time=$(date +%s)
+        if [ $((current_time - last_tmp_screenshot)) -ge 60 ]; then
+            cp "$HOME/pics/scrcpy_screenshot.png" "$HOME/tmp/tmp.png"
+            echo "Saved inspection screenshot to $HOME/tmp/tmp.png"
+            last_tmp_screenshot=$current_time
+        fi
+        
         # Check autoplay cooldown
         autoplay_search=1
         if [ -f "/tmp/autoplay_cooldown" ]; then
             last_click=$(cat "/tmp/autoplay_cooldown")
-            current_time=$(date +%s)
             elapsed=$((current_time - last_click))
             if [ "$elapsed" -lt 1800 ]; then
                 autoplay_search=0
@@ -219,7 +254,7 @@ print(f"{replay_result};{autoplay_result}")
             y_max=$((y + height))
             echo "Replay button found at ($x, $y), size ($width, $height), confidence=$confidence"
             echo "Saved matched area to $HOME/pics/matched_area.png"
-            random_click $x $y $x_max $y_max "$window_id" "replay"
+            random_click $x $y $x_max $y_max "replay"
         fi
         
         # Process autoplay result
@@ -239,7 +274,7 @@ print(f"{replay_result};{autoplay_result}")
             y_max=$((y + height))
             echo "Autoplay button found at ($x, $y), size ($width, $height), confidence=$confidence"
             echo "Saved matched area to $HOME/pics/matched_area.png"
-            random_click $x $y $x_max $y_max "$window_id" "autoplay"
+            random_click $x $y $x_max $y_max "autoplay"
             date +%s > "/tmp/autoplay_cooldown"
         fi
         
