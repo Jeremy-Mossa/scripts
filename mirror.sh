@@ -46,7 +46,7 @@ adb shell settings put system screen_brightness 10 || { echo "Failed to set devi
 ) &
 
 # Start Xvfb
-Xvfb :99 -screen 0 800x1280x24 &
+Xvfb :99 -screen 0 800x1280x24 >/dev/null 2>&1 &
 xvfb_pid=$!
 sleep 1  # Wait for Xvfb to start
 if ! ps -p "$xvfb_pid" > /dev/null; then
