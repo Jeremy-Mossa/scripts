@@ -55,26 +55,9 @@ if ! ps -p "$xvfb_pid" > /dev/null; then
 fi
 export DISPLAY=:99
 
-# Take tmp1.png after Xvfb starts
-scrot -u "$HOME/tmp/tmp1.png" 2>/dev/null
-if [ -f "$HOME/tmp/tmp1.png" ]; then
-    echo "Captured tmp1.png after Xvfb start"
-else
-    echo "Failed to capture tmp1.png"
-fi
-
 # Start scrcpy with specified settings
 scrcpy --window-title="Android Automation" --max-size=800 --max-fps=10 --no-audio --window-borderless &
 scrcpy_pid=$!
-
-# Take tmp2.png after scrcpy starts
-sleep 1
-scrot -u "$HOME/tmp/tmp2.png" 2>/dev/null
-if [ -f "$HOME/tmp/tmp2.png" ]; then
-    echo "Captured tmp2.png after scrcpy start"
-else
-    echo "Failed to capture tmp2.png"
-fi
 
 # Wait for scrcpy window to open
 echo "Waiting for scrcpy window..."
@@ -100,15 +83,10 @@ if [ $count -eq $timeout ]; then
     cleanup
 fi
 
-# Take tmp3.png after window is found
-scrot -u "$HOME/tmp/tmp3.png" 2>/dev/null
-if [ -f "$HOME/tmp/tmp3.png" ]; then
-    echo "Captured tmp3.png after window found"
-else
-    echo "Failed to capture tmp3.png"
-fi
+# Move window to (0,0)
+xdotool windowmove "$window_id" 0 0 2>/dev/null
 
-# Function to perform a random click using xdotool
+# Function to perform a random click using xdotool on absolute screen coordinates
 random_click() {
     x_min=$1
     y_min=$2
@@ -127,9 +105,9 @@ random_click() {
         y=$((y_min + RANDOM % (y_max - y_min + 1)))
     fi
     
-    # Perform click
-    echo "Clicking $button_name at desktop ($x, $y)"
-    xdotool mousemove "$x" "$y" click 1 2>/dev/null
+    # Click at absolute screen coordinates
+    echo "Clicking $button_name at screen ($x, $y)"
+    xdotool mousemove --sync "$x" "$y" click 1 2>/dev/null
 }
 
 # Search for buttons every 20 seconds and save screenshot every minute
@@ -153,11 +131,11 @@ random_click() {
             continue
         fi
         
-        # Capture screenshot using scrot
+        # Capture entire Xvfb screen using scrot
         retry_count=0
         max_retries=3
         while [ $retry_count -lt $max_retries ]; do
-            scrot -u "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
+            scrot "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
             if [ -f "$HOME/pics/scrcpy_screenshot.png" ]; then
                 echo "Screenshot captured"
                 break
