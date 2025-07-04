@@ -119,6 +119,7 @@ vim
 vimb
 vlc
 waydroid
+weston
 xclip
 xdotool
 xlockmore
@@ -126,6 +127,7 @@ xorg
 xorg-x11-font-utils
 xorg-x11-server-Xorg
 xorg-x11-server-Xvfb
+xorg-x11-server-Xwayland
 xrdb
 xsecurelock
 xterm
@@ -138,6 +140,9 @@ for package in $PKG; do
 done
 
 waydroid init -s GAPPS -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor
+systemctl start waydroid-container.service
+systemctl enable waydroid-container.service
+waydroid prop set persist.waydroid.uevent x11
 
 # Configure display manager
 if command -v slim > /dev/null && ! systemctl status gdm | grep -q "disabled"; then
