@@ -1,35 +1,28 @@
 #!/bin/ksh
 
 # Check if script is already running
-if [ -f /tmp/mirror.sh.pid ]; then
-    old_pid=$(cat /tmp/mirror.sh.pid)
-    if ps -p "$old_pid" > /dev/null; then
+pid_file="/tmp/mirror.sh.pid"
+if [ -f "$pid_file" ]; then
+    old_pid=$(cat "$pid_file")
+    if ps -p "$old_pid" > /dev/null 2>&1; then
         echo "Script is already running with PID $old_pid. Exiting."
         exit 1
     fi
 fi
+echo $$ > "$pid_file"
 
-# Store current PID
-echo $$ > /tmp/mirror.sh.pid
-
-# Function to clean up all processes
+# Function to clean up all processes and files
 cleanup() {
-    # Kill scrcpy and its child processes
+    echo "Cleaning up..."
     if [ -n "$scrcpy_pid" ]; then
         kill "$scrcpy_pid" 2>/dev/null
     fi
-    
-    # Kill background loops and related processes
     pkill -P $$ 2>/dev/null
     pkill -f "adb logcat" 2>/dev/null
     pkill -f "import" 2>/dev/null
-    pkill -f "compare" 2>/dev/null
+    pkill -f "python3.*match_template" 2>/dev/null
     adb kill-server 2>/dev/null
-    
-    # Clean up screenshot and PID file
-    rm -f ~/pics/scrcpy_screenshot.png
-    rm -f /tmp/mirror.sh.pid
-    
+    rm -f "$HOME/pics/scrcpy_screenshot.png" "$HOME/pics/matched_area.png" "/tmp/autoplay_cooldown" "$pid_file"
     exit 0
 }
 
@@ -37,7 +30,7 @@ cleanup() {
 trap cleanup INT TERM EXIT
 
 # Start adb server
-adb start-server
+adb start-server || { echo "Failed to start adb server"; exit 1; }
 
 # Clear adb logs every 10 seconds in the background
 (
@@ -48,16 +41,38 @@ adb start-server
 ) &
 
 # Start scrcpy with specified settings
-scrcpy --max-size=720 --max-fps=10 --no-audio &
+scrcpy --window-title="Android Automation" --max-size=800 --max-fps=10 --no-audio &
 
 # Store scrcpy PID
 scrcpy_pid=$!
 
 # Wait for scrcpy window to open
-sleep 5
+echo "Waiting for scrcpy window..."
+timeout=30
+count=0
+while [ $count -lt $timeout ]; do
+    window_id=$(xdotool search --name "Android Automation" 2>/dev/null)
+    if [ -n "$window_id" ]; then
+        echo "Scrcpy window found with ID: $window_id"
+        break
+    fi
+    # Fallback: try CPH2611
+    window_id=$(xdotool search --name "CPH2611" 2>/dev/null)
+    if [ -n "$window_id" ]; then
+        echo "Scrcpy window found with ID: $window_id (using CPH2611 title)"
+        break
+    fi
+    sleep 1
+    count=$((count + 1))
+done
+if [ $count -eq $timeout ]; then
+    echo "Error: Timeout waiting for scrcpy window"
+    cleanup
+fi
 
-# Raise scrcpy window (titled "CPH2611") initially
-xdotool search --name "CPH2611" windowraise
+# Raise and ensure window is mapped
+xdotool windowraise "$window_id" 2>/dev/null
+xdotool windowmap "$window_id" 2>/dev/null
 
 # Function to perform a random click within boundaries
 random_click() {
@@ -66,67 +81,169 @@ random_click() {
     x_max=$3
     y_max=$4
     window_id=$5
+    button_name=$6
     
-    # Generate random x and y within boundaries
+    # Generate random x within full x-range
     x=$((x_min + RANDOM % (x_max - x_min + 1)))
-    y=$((y_min + RANDOM % (y_max - y_min + 1)))
     
-    # Get window geometry (position on desktop)
-    geometry=$(xdotool getwindowgeometry --shell "$window_id")
-    win_x=$(echo "$geometry" | grep X= | cut -d= -f2)
-    win_y=$(echo "$geometry" | grep Y= | cut -d= -f2)
+    # Generate random y: bottom 50% for autoplay, full range for replay
+    height=$((y_max - y_min))
+    if [ "$button_name" = "autoplay" ]; then
+        y_start=$((y_min + height / 2))  # Start at middle of rectangle
+        y_range=$((y_max - y_start + 1)) # Range from middle to bottom
+        y=$((y_start + RANDOM % y_range))
+    else
+        y=$((y_min + RANDOM % (y_max - y_min + 1)))
+    fi
     
-    # Adjust coordinates to desktop (add window position)
-    desktop_x=$((win_x + x))
-    desktop_y=$((win_y + y))
-    
-    # Perform click using xdotool
-    echo "Clicking at desktop ($desktop_x, $desktop_y) for window-relative ($x, $y)"
-    xdotool mousemove "$desktop_x" "$desktop_y" click 1
+    # Perform click using xdotool directly at the coordinates
+    echo "Clicking $button_name at desktop ($x, $y)"
+    xdotool mousemove "$x" "$y" click 1 2>/dev/null
 }
 
-# Search for button every 20 seconds in the background
+# Search for buttons every 20 seconds in the background
 (
     while true; do
-        # Clean up previous screenshot
-        rm -f ~/pics/scrcpy_screenshot.png
+        # Clean up previous screenshot and matched area
+        rm -f "$HOME/pics/scrcpy_screenshot.png" "$HOME/pics/matched_area.png"
         
         # Find scrcpy window
-        window_id=$(xdotool search --name "CPH2611")
-        if [ -n "$window_id" ]; then
-            # Capture window using ImageMagick import (works on non-visible windows)
-            import -window "$window_id" ~/pics/scrcpy_screenshot.png
-            if [ -f ~/pics/scrcpy_screenshot.png ]; then
+        window_id=$(xdotool search --name "Android Automation" 2>/dev/null)
+        if [ -z "$window_id" ]; then
+            window_id=$(xdotool search --name "CPH2611" 2>/dev/null)
+        fi
+        if [ -z "$window_id" ]; then
+            echo "Scrcpy window not found"
+            sleep 20
+            continue
+        fi
+        
+        # Ensure window is mapped
+        xdotool windowmap "$window_id" 2>/dev/null
+        
+        # Try capturing screenshot with retries
+        retry_count=0
+        max_retries=3
+        while [ $retry_count -lt $max_retries ]; do
+            import -window "$window_id" "$HOME/pics/scrcpy_screenshot.png"
+            if [ -f "$HOME/pics/scrcpy_screenshot.png" ]; then
                 echo "Screenshot captured"
-                
-                # Use ImageMagick compare with 25% fuzz for 95% similarity
-                match=$(compare -metric AE -fuzz 5% -subimage-search ~/pics/scrcpy_screenshot.png ~/pics/replay.png null: 2>&1 | grep -o '[0-9]*,[0-9]*')
-                
-                if [ -n "$match" ]; then
-                    # Extract x,y coordinates
-                    x=$(echo "$match" | cut -d',' -f1)
-                    y=$(echo "$match" | cut -d',' -f2)
-                    
-                    # Get button dimensions from replay.png
-                    button_size=$(identify -format "%w,%h" ~/pics/replay.png)
-                    width=$(echo "$button_size" | cut -d',' -f1)
-                    height=$(echo "$button_size" | cut -d',' -f2)
-                    
-                    # Calculate boundaries
-                    x_max=$((x + width))
-                    y_max=$((y + height))
-                    
-                    # Perform random click
-                    echo "Button found at ($x, $y), size ($width, $height)"
-                    random_click $x $y $x_max $y_max "$window_id"
-                else
-                    echo "No button match found"
-                fi
+                break
+            fi
+            echo "Failed to capture screenshot (attempt $((retry_count + 1))/$max_retries)"
+            retry_count=$((retry_count + 1))
+            sleep 2
+        done
+        if [ $retry_count -eq $max_retries ]; then
+            echo "Giving up after $max_retries failed screenshot attempts"
+            # Fallback: try name-based capture
+            import -window "Android Automation" "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
+            if [ -f "$HOME/pics/scrcpy_screenshot.png" ]; then
+                echo "Screenshot captured using fallback method"
             else
-                echo "Failed to capture screenshot"
+                echo "Fallback screenshot capture also failed"
+                sleep 20
+                continue
+            fi
+        fi
+        
+        # Check autoplay cooldown
+        autoplay_search=1
+        if [ -f "/tmp/autoplay_cooldown" ]; then
+            last_click=$(cat "/tmp/autoplay_cooldown")
+            current_time=$(date +%s)
+            elapsed=$((current_time - last_click))
+            if [ "$elapsed" -lt 1800 ]; then
+                autoplay_search=0
+                echo "Autoplay in cooldown (elapsed: $elapsed seconds, remaining: $((1800 - elapsed)) seconds)"
+            fi
+        fi
+        
+        # Python script for OpenCV template matching
+        match_result=$(python3 -c '
+import cv2
+import numpy as np
+import sys
+
+# Load screenshot
+screenshot = cv2.imread("'$HOME/pics/scrcpy_screenshot.png'")
+if screenshot is None:
+    print("Error: Could not load screenshot")
+    sys.exit(1)
+
+# Function to match template
+def match_template(template_path, button_name):
+    template = cv2.imread(template_path)
+    if template is None:
+        print(f"Error: Could not load {button_name}")
+        return "No match"
+    h, w = template.shape[:2]
+    result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+    if max_val >= 0.9:
+        top_left = max_loc
+        bottom_right = (top_left[0] + w, top_left[1] + h)
+        debug_img = screenshot.copy()
+        cv2.rectangle(debug_img, top_left, bottom_right, (0, 255, 0), 2)
+        cv2.imwrite("'$HOME/pics/matched_area.png'", debug_img)
+        return f"{top_left[0]},{top_left[1]},{max_val},{button_name},{w},{h}"
+    return "No match"
+
+# Match replay.png
+replay_result = match_template("'$HOME/pics/replay.png'", "replay")
+
+# Match autoplay.png if not in cooldown
+autoplay_result = "No match"
+if '$autoplay_search':
+    autoplay_result = match_template("'$HOME/pics/autoplay.png'", "autoplay")
+
+# Output results
+print(f"{replay_result};{autoplay_result}")
+' 2>&1)
+        
+        if echo "$match_result" | grep -q "Error"; then
+            echo "Template matching failed: $match_result"
+            sleep 20
+            continue
+        fi
+        
+        # Process replay result
+        replay_result=$(echo "$match_result" | cut -d';' -f1)
+        if echo "$replay_result" | grep -q "No match"; then
+            echo "No replay button match found (confidence < 0.9)"
+        else
+            x=$(echo "$replay_result" | cut -d',' -f1)
+            y=$(echo "$replay_result" | cut -d',' -f2)
+            confidence=$(echo "$replay_result" | cut -d',' -f3)
+            button_name=$(echo "$replay_result" | cut -d',' -f4)
+            width=$(echo "$replay_result" | cut -d',' -f5)
+            height=$(echo "$replay_result" | cut -d',' -f6)
+            x_max=$((x + width))
+            y_max=$((y + height))
+            echo "Replay button found at ($x, $y), size ($width, $height), confidence=$confidence"
+            echo "Saved matched area to $HOME/pics/matched_area.png"
+            random_click $x $y $x_max $y_max "$window_id" "replay"
+        fi
+        
+        # Process autoplay result
+        autoplay_result=$(echo "$match_result" | cut -d';' -f2)
+        if echo "$autoplay_result" | grep -q "No match"; then
+            if [ "$autoplay_search" -eq 1 ]; then
+                echo "No autoplay button match found (confidence < 0.9)"
             fi
         else
-            echo "Scrcpy window not found"
+            x=$(echo "$autoplay_result" | cut -d',' -f1)
+            y=$(echo "$autoplay_result" | cut -d',' -f2)
+            confidence=$(echo "$autoplay_result" | cut -d',' -f3)
+            button_name=$(echo "$autoplay_result" | cut -d',' -f4)
+            width=$(echo "$autoplay_result" | cut -d',' -f5)
+            height=$(echo "$autoplay_result" | cut -d',' -f6)
+            x_max=$((x + width))
+            y_max=$((y + height))
+            echo "Autoplay button found at ($x, $y), size ($width, $height), confidence=$confidence"
+            echo "Saved matched area to $HOME/pics/matched_area.png"
+            random_click $x $y $x_max $y_max "$window_id" "autoplay"
+            date +%s > "/tmp/autoplay_cooldown"
         fi
         
         sleep 20
