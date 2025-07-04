@@ -119,7 +119,6 @@ vim
 vimb
 vlc
 waydroid
-weston
 xclip
 xdotool
 xlockmore
@@ -139,10 +138,7 @@ for package in $PKG; do
   yes | dnf install "$package"
 done
 
-waydroid init -s GAPPS -c https://ota.waydro.id/system -v https://ota.waydro.id/vendor
-systemctl start waydroid-container.service
-systemctl enable waydroid-container.service
-waydroid prop set persist.waydroid.uevent x11
+usermod -aG render jbm
 
 # Configure display manager
 if command -v slim > /dev/null && ! systemctl status gdm | grep -q "disabled"; then
