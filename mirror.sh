@@ -62,7 +62,8 @@ export DISPLAY=:99
 # Start scrcpy with specified settings
 scrcpy --window-title="Android Automation" \
   --max-size=800 --max-fps=10 \
-  --no-audio --window-borderless &
+  --no-audio --window-borderless \
+  --select-usb &
 scrcpy_pid=$!
 
 # Wait for scrcpy window to open
@@ -169,7 +170,7 @@ random_click() {
         if [ -f "/tmp/autoplay_cooldown" ]; then
             last_click=$(cat "/tmp/autoplay_cooldown")
             elapsed=$((current_time - last_click))
-            if [ "$elapsed" -lt 100 ]; then
+            if [ "$elapsed" -lt 2040 ]; then
                 autoplay_search=0
             fi
         fi
