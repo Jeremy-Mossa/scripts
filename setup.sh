@@ -144,7 +144,27 @@ for package in $PKG; do
   yes | dnf install "$package"
 done
 
+# Add to the render group
 usermod -aG render jbm
+
+# Define a udev rule to detect android devices
+UDEV_RULE='SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ACTION=="add", RUN+="/usr/local/bin/android-detect.sh"'
+UDEV_FILE="/etc/udev/rules.d/99-android-detect.rules"
+
+# Check if the rule already exists in the file
+if [ -f "$UDEV_FILE" ] && grep -Fx "$UDEV_RULE" "$UDEV_FILE" >/dev/null; then
+    echo "udev rule already exists, skipping..."
+else
+    # Echo the rule to the file
+    echo "$UDEV_RULE" | tee "$UDEV_FILE" >/dev/null
+    # Set correct permissions
+    chmod 644 "$UDEV_FILE"
+    echo "udev rule added."
+fi
+
+# Reload udev rules
+udevadm control --reload-rules
+udevadm trigger
 
 # Configure display manager
 if command -v slim > /dev/null && ! systemctl status gdm | grep -q "disabled"; then
