@@ -35,17 +35,6 @@ system('xdotool search --onlyvisible --name ' .
   '"Grok_Login" windowactivate key ctrl+alt+f');
 sleep 1.5;
 
-my $obfuscator = 'xterm -bg black -fg black ' .
-  '-geometry 100x45+800+50 -T "OBFUSCATED"' .
-  ' -class "Overlay" -e "sleep 15" & sleep 0.2 ' .
-  '&& wmctrl -r OBFUSCATED -b ' .
-  'remove,decorations,maximized_vert,' .
-  'maximized_horz && xprop -name OBFUSCATED ' .
-  ' -f _MOTIF_WM_HINTS 32c -set _MOTIF_WM_HINTS ' .
-  '"0x2, 0x0, 0x0, 0x0, 0x0"';
-
-system($obfuscator);
-
 system('xdotool mousemove 1870 180');
 system('xdotool click 1');
 sleep 4;
