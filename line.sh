@@ -26,3 +26,18 @@ xdotool type "$password"
 sleep 0.5
 xdotool key Return
 xdotool mousemove 1903 14 click 1
+
+sleep 3
+/home/jbm/genymotion/genymotion/genymotion >/dev/null 2>&1 &
+sleep 3
+xdotool mousemove 255 210 click 1
+sleep 0.25
+xdotool mousemove 255 210 click 1
+sleep 1
+for win_id in $(xdotool search --name "LINE"); do
+    if [ "$(xdotool get_desktop_for_window "$win_id")" = "2" ]; then
+        xdotool windowactivate "$win_id"
+        xdotool key F11
+        exit 0
+    fi
+done
