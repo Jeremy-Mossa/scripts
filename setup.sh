@@ -59,6 +59,8 @@ acpi
 adb 
 boxes
 bubblewrap
+clang
+cmake
 cronie
 dillo
 dkms
@@ -78,6 +80,7 @@ giflib
 gimp
 git
 gnucash
+gtk3-devel
 htop
 icecat
 inxi
@@ -95,9 +98,11 @@ mullvad-vpn
 mupdf
 mutt
 net-tools
+ninja-build
 perl-Gtk3
 perl-HTTP-Tiny
 perl-JSON-PP
+pkgconf-pkg-config
 prename
 python3-numpy
 python3-opencv
@@ -130,6 +135,7 @@ xorg-x11-server-Xwayland
 xrdb
 xsecurelock
 xterm
+xz-devel
 xz-lzma-compat
 yt-dlp
 "

@@ -3,6 +3,11 @@
 git_dirs=$(find $HOME -type d -name ".git" -prune -exec dirname {} \;) 
 
 for dir in $git_dirs; do
+  # Skip flutter_calc repository
+  if [[ "$dir" == *"/flutter_calc" ]]; then
+    echo "Skipping flutter_calc repository at $dir"
+    continue
+  fi
 	cd "$dir" || continue
   # Pull first in case editing was done on github
   git pull ssh main
