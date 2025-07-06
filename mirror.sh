@@ -11,7 +11,7 @@ if [ -f "$pid_file" ]; then
 fi
 echo $$ > "$pid_file"
 
-# AVG_CLICK: count=3 sum=6156
+# AVG_CLICK: count=4 sum=8273
 
 # Function to clean up all processes and files
 cleanup() {
@@ -170,7 +170,7 @@ random_click() {
         if [ -f "/tmp/autoplay_cooldown" ]; then
             last_click=$(cat "/tmp/autoplay_cooldown")
             elapsed=$((current_time - last_click))
-            if [ "$elapsed" -lt 2040 ]; then
+            if [ "$elapsed" -lt 1900 ]; then
                 autoplay_search=0
             fi
         fi
