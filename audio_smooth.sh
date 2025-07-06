@@ -39,9 +39,9 @@ tempfile=$(mktemp /tmp/audio_smooth.XXXXXX.mp4) || {
 # Create a log file for FFmpeg output
 logfile="/tmp/audio_smooth_$$.log"
 
-# Apply audio filters: highpass for plosives, lowpass for squeals, afftdn for scratches, compand for volume smoothing
+# Apply audio filters for professional quality
 # Log FFmpeg output for debugging
-if ffmpeg -i "$1" -af "highpass=f=200,lowpass=f=3000,afftdn=nr=10:nt=w:om=o,compand=attacks=0.3:decays=0.8:points=-70/-70|-20/-20|0/-10" -c:v copy -y "$tempfile" >"$logfile" 2>&1; then
+if ffmpeg -i "$1" -af "highpass=f=200,lowpass=f=3000,afftdn=nr=15:nt=w:om=o,deesser=i=0.5,equalizer=f=2000:t=q:w=1:g=3,acompressor=threshold=-21dB:ratio=3:attack=20:release=120,agate=threshold=-40dB:ratio=10:attack=2:release=100,dynaudnorm=f=150:g=15,compand=attacks=0.3:decays=0.8:points=-70/-70|-20/-20|0/-10" -c:v copy -y "$tempfile" >"$logfile" 2>&1; then
     # Move temporary file to original file, overwriting it
     if mv "$tempfile" "$1"; then
         echo "Successfully processed '$1'"
