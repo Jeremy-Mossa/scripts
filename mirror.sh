@@ -11,6 +11,8 @@ if [ -f "$pid_file" ]; then
 fi
 echo $$ > "$pid_file"
 
+# AVG_CLICK: count=0 sum=0
+
 # Function to clean up all processes and files
 cleanup() {
     echo "Cleaning up..."
@@ -23,11 +25,12 @@ cleanup() {
     pkill -P $$ 2>/dev/null
     pkill -f "adb logcat" 2>/dev/null
     pkill -f "python3.*match_template" 2>/dev/null
-    adb kill-server 2>/dev/null
+    adb -s 6433f574 kill-server 2>/dev/null
     rm -f "$HOME/pics/scrcpy_screenshot.png" \
       "$HOME/pics/matched_area.png" \
       "$HOME/tmp/tmp.png" "/tmp/autoplay_cooldown" \
       "$pid_file"
+    unset last_autoplay_time
     exit 0
 }
 
@@ -35,16 +38,16 @@ cleanup() {
 trap cleanup INT TERM EXIT
 
 # Start adb server
-adb start-server || { echo "Failed to start adb server"; exit 1; }
+adb -s 6433f574 start-server || { echo "Failed to start adb server"; exit 1; }
 
 # Set Android device brightness to just above 0 (10/255)
-adb shell settings put system screen_brightness 10 \
+adb -s 6433f574 shell settings put system screen_brightness 10 \
   || { echo "Failed to set device brightness"; }
 
 # Clear adb logs every 10 seconds in the background
 (
     while true; do
-        adb logcat -c >/dev/null 2>&1
+        adb -s 6433f574 logcat -c >/dev/null 2>&1
         sleep 10
     done
 ) &
@@ -142,7 +145,9 @@ random_click() {
         retry_count=0
         max_retries=3
         while [ $retry_count -lt $max_retries ]; do
-            scrot "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
+            if scrot "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null; then
+                break
+            fi
             echo "Failed to capture screenshot (attempt $((retry_count + 1))/$max_retries)"
             retry_count=$((retry_count + 1))
             sleep 1
@@ -157,7 +162,6 @@ random_click() {
         current_time=$(date +%s)
         if [ $((current_time - last_tmp_screenshot)) -ge 60 ]; then
             cp "$HOME/pics/scrcpy_screenshot.png" "$HOME/tmp/tmp.png"
-            echo "Saved inspection screenshot to $HOME/tmp/tmp.png"
             last_tmp_screenshot=$current_time
         fi
         
@@ -172,23 +176,26 @@ random_click() {
         fi
         
         # Python script for OpenCV template matching
-        match_result=$(python3 -c '
+        match_result=$(python3 -c "
 import cv2
 import numpy as np
 import sys
 
+# Pass the shell variable value into Python
+autoplay_search = $autoplay_search
+
 # Load screenshot
-screenshot = cv2.imread("'$HOME/pics/scrcpy_screenshot.png'")
+screenshot = cv2.imread('$HOME/pics/scrcpy_screenshot.png')
 if screenshot is None:
-    print("Error: Could not load screenshot")
+    print('Error: Could not load screenshot')
     sys.exit(1)
 
 # Function to match template
 def match_template(template_path, button_name):
     template = cv2.imread(template_path)
     if template is None:
-        print(f"Error: Could not load {button_name}")
-        return "No match"
+        print(f'Error: Could not load {button_name}')
+        return 'No match'
     h, w = template.shape[:2]
     result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
@@ -197,21 +204,21 @@ def match_template(template_path, button_name):
         bottom_right = (top_left[0] + w, top_left[1] + h)
         debug_img = screenshot.copy()
         cv2.rectangle(debug_img, top_left, bottom_right, (0, 255, 0), 2)
-        cv2.imwrite("'$HOME/pics/matched_area.png'", debug_img)
-        return f"{top_left[0]},{top_left[1]},{max_val},{button_name},{w},{h}"
-    return "No match"
+        cv2.imwrite('$HOME/pics/matched_area.png', debug_img)
+        return f'{top_left[0]},{top_left[1]},{max_val},{button_name},{w},{h}'
+    return 'No match'
 
 # Match replay.png
-replay_result = match_template("'$HOME/pics/replay.png'", "replay")
+replay_result = match_template('$HOME/pics/replay.png', 'replay')
 
 # Match autoplay.png if not in cooldown
-autoplay_result = "No match"
-if '$autoplay_search':
-    autoplay_result = match_template("'$HOME/pics/autoplay.png'", "autoplay")
+autoplay_result = 'No match'
+if autoplay_search:
+    autoplay_result = match_template('$HOME/pics/autoplay.png', 'autoplay')
 
 # Output results
-print(f"{replay_result};{autoplay_result}")
-' 2>&1)
+print(f'{replay_result};{autoplay_result}')
+" 2>&1)
         
         if echo "$match_result" | grep -q "Error"; then
             echo "Template matching failed: $match_result"
@@ -219,57 +226,68 @@ print(f"{replay_result};{autoplay_result}")
             continue
         fi
         
-# AVG_CLICK: count=0 sum=0
-# Process replay result
-replay_result=$(echo "$match_result" | cut -d';' -f1)
-if echo "$replay_result" | grep -q "No match"; then
-    echo "$replay_result"
-else
-    x=$(echo "$replay_result" | cut -d',' -f1)
-    y=$(echo "$replay_result" | cut -d',' -f2)
-    confidence=$(echo "$replay_result" | cut -d',' -f3)
-    button_name=$(echo "$replay_result" | cut -d',' -f4)
-    width=$(echo "$replay_result" | cut -d',' -f5)
-    height=$(echo "$replay_result" | cut -d',' -f6)
-    x_max=$((x + width))
-    y_max=$((y + height))
-    echo -n "Replay button found at ($x, $y) "
-    random_click $x $y $x_max $y_max "replay"
-fi
-
-# Process autoplay result
-autoplay_result=$(echo "$match_result" | cut -d';' -f2)
-if echo "$autoplay_result" | grep -q "No match"; then
-    if [ "$autoplay_search" -eq 1 ]; then
-        echo "$autoplay_result"
-    fi
-else
-    x=$(echo "$autoplay_result" | cut -d',' -f1)
-    y=$(echo "$autoplay_result" | cut -d',' -f2)
-    confidence=$(echo "$autoplay_result" | cut -d',' -f3)
-    button_name=$(echo "$autoplay_result" | cut -d',' -f4)
-    width=$(echo "$autoplay_result" | cut -d',' -f5)
-    height=$(echo "$autoplay_result" | cut -d',' -f6)
-    x_max=$((x + width))
-    y_max=$((y + height))
-    echo -n "Autoplay button found at ($x, $y) "
-    random_click $x $y $x_max $y_max "autoplay"
-    date +%s > "/tmp/autoplay_cooldown"
-    autoplay_time=$(date +%s)
-    if [ -n "$last_autoplay_time" ]; then
-        time_diff=$((autoplay_time - last_autoplay_time))
-        if [ $time_diff -ge 1200 ] && [ $time_diff -le 3000 ]; then
-            avg_line=$(grep "^# AVG_CLICK:" "$0")
-            count=$(echo "$avg_line" | sed 's/.*count=\([0-9]*\).*/\1/')
-            sum=$(echo "$avg_line" | sed 's/.*sum=\([0-9]*\).*/\1/')
-            count=$((count + 1))
-            sum=$((sum + time_diff))
-            average=$((sum / count))
-            sed -i "s/^# AVG_CLICK:.*/# AVG_CLICK: count=$count sum=$sum/" "$0"
-            echo "Autoplay cycle time: $time_diff seconds, Average: $average seconds"
+        # Process replay result
+        replay_result=$(echo "$match_result" | cut -d';' -f1)
+        if echo "$replay_result" | grep -q "No match"; then
+          :
         else
-            echo "Autoplay cycle time $time_diff seconds ignored (out of 1200-3000 range)"
+            x=$(echo "$replay_result" | cut -d',' -f1)
+            y=$(echo "$replay_result" | cut -d',' -f2)
+            confidence=$(echo "$replay_result" | cut -d',' -f3)
+            button_name=$(echo "$replay_result" | cut -d',' -f4)
+            width=$(echo "$replay_result" | cut -d',' -f5)
+            height=$(echo "$replay_result" | cut -d',' -f6)
+            x_max=$((x + width))
+            y_max=$((y + height))
+            echo -n "Replay button found at ($x, $y) "
+            random_click $x $y $x_max $y_max "replay"
         fi
-    fi
-    last_autoplay_time=$autoplay_time
-fi
+
+        # Process autoplay result
+        autoplay_result=$(echo "$match_result" | cut -d';' -f2)
+        if echo "$autoplay_result" | grep -q "No match"; then
+            if [ "$autoplay_search" -eq 1 ]; then
+                :
+            fi
+        else
+            x=$(echo "$autoplay_result" | cut -d',' -f1)
+            y=$(echo "$autoplay_result" | cut -d',' -f2)
+            confidence=$(echo "$autoplay_result" | cut -d',' -f3)
+            button_name=$(echo "$autoplay_result" | cut -d',' -f4)
+            width=$(echo "$autoplay_result" | cut -d',' -f5)
+            height=$(echo "$autoplay_result" | cut -d',' -f6)
+            x_max=$((x + width))
+            y_max=$((y + height))
+            echo -n "Autoplay button found at ($x, $y) "
+            random_click $x $y $x_max $y_max "autoplay"
+            date +%s > "/tmp/autoplay_cooldown"
+            autoplay_time=$(date +%s)
+            if [ -n "$last_autoplay_time" ]; then
+                time_diff=$((autoplay_time - last_autoplay_time))
+                if [ $time_diff -ge 1200 ] && [ $time_diff -le 3000 ]; then
+                    avg_line=$(grep "^# AVG_CLICK:" "$0")
+                    count=$(echo "$avg_line" | sed 's/.*count=\([0-9]*\).*/\1/')
+                    sum=$(echo "$avg_line" | sed 's/.*sum=\([0-9]*\).*/\1/')
+                    count=$((count + 1))
+                    sum=$((sum + time_diff))
+                    average=$((sum / count))
+                    minutes=$((average / 60))
+                    seconds=$((average % 60))
+                    # Update the script's comment with count and sum
+                    sed -i "s/^# AVG_CLICK:.*/# AVG_CLICK: count=$count sum=$sum/" "$0"
+                    # Display time_diff and average in minutes:seconds
+                    printf "Autoplay cycle time: %d:%02d, Average: %d:%02d\n" \
+                        $((time_diff / 60)) $((time_diff % 60)) $minutes $seconds
+                else
+                    echo "Autoplay cycle time $time_diff seconds ignored (out of  eagles1200-3000 range)"
+                fi
+            fi
+            last_autoplay_time=$autoplay_time
+        fi
+
+        sleep 20
+    done
+) &
+
+# Wait for scrcpy to exit
+wait "$scrcpy_pid"
