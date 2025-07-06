@@ -143,10 +143,6 @@ random_click() {
         max_retries=3
         while [ $retry_count -lt $max_retries ]; do
             scrot "$HOME/pics/scrcpy_screenshot.png" 2>/dev/null
-            if [ -f "$HOME/pics/scrcpy_screenshot.png" ]; then
-                echo "Screenshot captured"
-                break
-            fi
             echo "Failed to capture screenshot (attempt $((retry_count + 1))/$max_retries)"
             retry_count=$((retry_count + 1))
             sleep 1
@@ -203,7 +199,7 @@ def match_template(template_path, button_name):
         cv2.rectangle(debug_img, top_left, bottom_right, (0, 255, 0), 2)
         cv2.imwrite("'$HOME/pics/matched_area.png'", debug_img)
         return f"{top_left[0]},{top_left[1]},{max_val},{button_name},{w},{h}"
-    return f"No match, confidence={max_val}"
+    return "No match"
 
 # Match replay.png
 replay_result = match_template("'$HOME/pics/replay.png'", "replay")
@@ -223,50 +219,57 @@ print(f"{replay_result};{autoplay_result}")
             continue
         fi
         
-        # Process replay result
-        replay_result=$(echo "$match_result" | cut -d';' -f1)
-        if echo "$replay_result" | grep -q "No match"; then
-            echo "$replay_result"
-        else
-            x=$(echo "$replay_result" | cut -d',' -f1)
-            y=$(echo "$replay_result" | cut -d',' -f2)
-            confidence=$(echo "$replay_result" | cut -d',' -f3)
-            button_name=$(echo "$replay_result" | cut -d',' -f4)
-            width=$(echo "$replay_result" | cut -d',' -f5)
-            height=$(echo "$replay_result" | cut -d',' -f6)
-            x_max=$((x + width))
-            y_max=$((y + height))
-            echo -n "Replay button found at ($x, $y) "
-            echo "size ($width, $height), confidence=$confidence"
-            echo "Saved matched area to $HOME/pics/matched_area.png"
-            random_click $x $y $x_max $y_max "replay"
-        fi
-        
-        # Process autoplay result
-        autoplay_result=$(echo "$match_result" | cut -d';' -f2)
-        if echo "$autoplay_result" | grep -q "No match"; then
-            if [ "$autoplay_search" -eq 1 ]; then
-                echo "$autoplay_result"
-            fi
-        else
-            x=$(echo "$autoplay_result" | cut -d',' -f1)
-            y=$(echo "$autoplay_result" | cut -d',' -f2)
-            confidence=$(echo "$autoplay_result" | cut -d',' -f3)
-            button_name=$(echo "$autoplay_result" | cut -d',' -f4)
-            width=$(echo "$autoplay_result" | cut -d',' -f5)
-            height=$(echo "$autoplay_result" | cut -d',' -f6)
-            x_max=$((x + width))
-            y_max=$((y + height))
-            echo -n "Autoplay button found at ($x, $y) "
-            echo "size ($width, $height), confidence=$confidence"
-            echo "Saved matched area to $HOME/pics/matched_area.png"
-            random_click $x $y $x_max $y_max "autoplay"
-            date +%s > "/tmp/autoplay_cooldown"
-        fi
-        
-        sleep 20
-    done
-) &
+# AVG_CLICK: count=0 sum=0
+# Process replay result
+replay_result=$(echo "$match_result" | cut -d';' -f1)
+if echo "$replay_result" | grep -q "No match"; then
+    echo "$replay_result"
+else
+    x=$(echo "$replay_result" | cut -d',' -f1)
+    y=$(echo "$replay_result" | cut -d',' -f2)
+    confidence=$(echo "$replay_result" | cut -d',' -f3)
+    button_name=$(echo "$replay_result" | cut -d',' -f4)
+    width=$(echo "$replay_result" | cut -d',' -f5)
+    height=$(echo "$replay_result" | cut -d',' -f6)
+    x_max=$((x + width))
+    y_max=$((y + height))
+    echo -n "Replay button found at ($x, $y) "
+    random_click $x $y $x_max $y_max "replay"
+fi
 
-# Wait for scrcpy to exit
-wait "$scrcpy_pid"
+# Process autoplay result
+autoplay_result=$(echo "$match_result" | cut -d';' -f2)
+if echo "$autoplay_result" | grep -q "No match"; then
+    if [ "$autoplay_search" -eq 1 ]; then
+        echo "$autoplay_result"
+    fi
+else
+    x=$(echo "$autoplay_result" | cut -d',' -f1)
+    y=$(echo "$autoplay_result" | cut -d',' -f2)
+    confidence=$(echo "$autoplay_result" | cut -d',' -f3)
+    button_name=$(echo "$autoplay_result" | cut -d',' -f4)
+    width=$(echo "$autoplay_result" | cut -d',' -f5)
+    height=$(echo "$autoplay_result" | cut -d',' -f6)
+    x_max=$((x + width))
+    y_max=$((y + height))
+    echo -n "Autoplay button found at ($x, $y) "
+    random_click $x $y $x_max $y_max "autoplay"
+    date +%s > "/tmp/autoplay_cooldown"
+    autoplay_time=$(date +%s)
+    if [ -n "$last_autoplay_time" ]; then
+        time_diff=$((autoplay_time - last_autoplay_time))
+        if [ $time_diff -ge 1200 ] && [ $time_diff -le 3000 ]; then
+            avg_line=$(grep "^# AVG_CLICK:" "$0")
+            count=$(echo "$avg_line" | sed 's/.*count=\([0-9]*\).*/\1/')
+            sum=$(echo "$avg_line" | sed 's/.*sum=\([0-9]*\).*/\1/')
+            count=$((count + 1))
+            sum=$((sum + time_diff))
+            average=$((sum / count))
+            sed -i "s/^# AVG_CLICK:.*/# AVG_CLICK: count=$count sum=$sum/" "$0"
+            echo "Autoplay cycle time: $time_diff seconds, Average: $average seconds"
+        else
+            echo "Autoplay cycle time $time_diff seconds ignored (out of 1200-3000 range)"
+        fi
+    fi
+    last_autoplay_time=$autoplay_time
+fi
