@@ -11,7 +11,7 @@ if [ -f "$pid_file" ]; then
 fi
 echo $$ > "$pid_file"
 
-# AVG_CLICK: count=6 sum=12336
+# AVG_CLICK: count=7 sum=14351
 
 # Function to clean up all processes and files
 cleanup() {
@@ -28,7 +28,7 @@ cleanup() {
     adb -s 6433f574 kill-server 2>/dev/null
     rm -f "$HOME/pics/scrcpy_screenshot.png" \
       "$HOME/pics/matched_area.png" \
-      "$HOME/tmp/tmp.png" "/tmp/autoplay_cooldown" \
+      "$HOME/tmp/tmp.png" \
       "$pid_file"
     unset last_autoplay_time
     exit 0
@@ -106,14 +106,7 @@ random_click() {
     
     # Generate random coordinates
     x=$((x_min + RANDOM % (x_max - x_min + 1)))
-    height=$((y_max - y_min))
-    if [ "$button_name" = "autoplay" ]; then
-        y_start=$((y_min + height / 2))
-        y_range=$((y_max - y_start + 1))
-        y=$((y_start + RANDOM % y_range))
-    else
-        y=$((y_min + RANDOM % (y_max - y_min + 1)))
-    fi
+    y=$((y_min + RANDOM % (y_max - y_min + 1)))
     
     # Click at absolute screen coordinates
     echo "Clicking $button_name at screen ($x, $y)"
@@ -165,24 +158,11 @@ random_click() {
             last_tmp_screenshot=$current_time
         fi
         
-        # Check autoplay cooldown
-        autoplay_search=1
-        if [ -f "/tmp/autoplay_cooldown" ]; then
-            last_click=$(cat "/tmp/autoplay_cooldown")
-            elapsed=$((current_time - last_click))
-            if [ "$elapsed" -lt 2000 ]; then
-                autoplay_search=0
-            fi
-        fi
-        
         # Python script for OpenCV template matching
         match_result=$(python3 -c "
 import cv2
 import numpy as np
 import sys
-
-# Pass the shell variable value into Python
-autoplay_search = $autoplay_search
 
 # Load screenshot
 screenshot = cv2.imread('$HOME/pics/scrcpy_screenshot.png')
@@ -199,7 +179,7 @@ def match_template(template_path, button_name):
     h, w = template.shape[:2]
     result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-    if max_val >= 0.7:
+    if max_val >= 0.85:
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
         debug_img = screenshot.copy()
@@ -211,13 +191,12 @@ def match_template(template_path, button_name):
 # Match replay.png
 replay_result = match_template('$HOME/pics/replay.png', 'replay')
 
-# Match autoplay.png if not in cooldown
-autoplay_result = 'No match'
-if autoplay_search:
-    autoplay_result = match_template('$HOME/pics/autoplay.png', 'autoplay')
+# Match ws.png and autoplay.png
+ws_result = match_template('$HOME/pics/ws.png', 'ws')
+autoplay_result = match_template('$HOME/pics/autoplay.png', 'autoplay')
 
 # Output results
-print(f'{replay_result};{autoplay_result}')
+print(f'{replay_result};{ws_result};{autoplay_result}')
 " 2>&1)
         
         if echo "$match_result" | grep -q "Error"; then
@@ -243,12 +222,11 @@ print(f'{replay_result};{autoplay_result}')
             random_click $x $y $x_max $y_max "replay"
         fi
 
-        # Process autoplay result
-        autoplay_result=$(echo "$match_result" | cut -d';' -f2)
-        if echo "$autoplay_result" | grep -q "No match"; then
-            if [ "$autoplay_search" -eq 1 ]; then
-                :
-            fi
+        # Process ws and autoplay results
+        ws_result=$(echo "$match_result" | cut -d';' -f2)
+        autoplay_result=$(echo "$match_result" | cut -d';' -f3)
+        if echo "$ws_result" | grep -q "No match" || echo "$autoplay_result" | grep -q "No match"; then
+            :
         else
             x=$(echo "$autoplay_result" | cut -d',' -f1)
             y=$(echo "$autoplay_result" | cut -d',' -f2)
@@ -258,9 +236,8 @@ print(f'{replay_result};{autoplay_result}')
             height=$(echo "$autoplay_result" | cut -d',' -f6)
             x_max=$((x + width))
             y_max=$((y + height))
-            echo -n "Autoplay button found at ($x, $y) "
+            echo -n "Autoplay button found at ($x, $y) with ws present "
             random_click $x $y $x_max $y_max "autoplay"
-            date +%s > "/tmp/autoplay_cooldown"
             autoplay_time=$(date +%s)
             if [ -n "$last_autoplay_time" ]; then
                 time_diff=$((autoplay_time - last_autoplay_time))
@@ -279,7 +256,7 @@ print(f'{replay_result};{autoplay_result}')
                     printf "Autoplay cycle time: %d:%02d, Average: %d:%02d\n" \
                         $((time_diff / 60)) $((time_diff % 60)) $minutes $seconds
                 else
-                    echo "Autoplay cycle time $time_diff seconds ignored (out of  eagles1200-3000 range)"
+                    echo "Autoplay cycle time $time_diff seconds ignored (out of 1200-3000 range)"
                 fi
             fi
             last_autoplay_time=$autoplay_time
