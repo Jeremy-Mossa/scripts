@@ -11,7 +11,7 @@ if [ -f "$pid_file" ]; then
 fi
 echo $$ > "$pid_file"
 
-# AVG_CLICK: count=9 sum=18720
+# AVG_CLICK: count=10 sum=20659
 
 # Function to clean up all processes and files
 cleanup() {
@@ -241,7 +241,7 @@ print(f'{replay_result};{ws_result};{autoplay_result}')
             autoplay_time=$(date +%s)
             if [ -n "$last_autoplay_time" ]; then
                 time_diff=$((autoplay_time - last_autoplay_time))
-                if [ $time_diff -ge 1200 ] && [ $time_diff -le 3000 ]; then
+                if [ $time_diff -ge 1740 ] && [ $time_diff -le 2400 ]; then
                     avg_line=$(grep "^# AVG_CLICK:" "$0")
                     count=$(echo "$avg_line" | sed 's/.*count=\([0-9]*\).*/\1/')
                     sum=$(echo "$avg_line" | sed 's/.*sum=\([0-9]*\).*/\1/')
