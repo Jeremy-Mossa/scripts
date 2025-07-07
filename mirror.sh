@@ -11,7 +11,7 @@ if [ -f "$pid_file" ]; then
 fi
 echo $$ > "$pid_file"
 
-# AVG_CLICK: count=5 sum=10227
+# AVG_CLICK: count=6 sum=12336
 
 # Function to clean up all processes and files
 cleanup() {
