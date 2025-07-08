@@ -23,8 +23,7 @@ my $firefox_bin = "/usr/bin/firefox";
 my $url = "https://grok.com";
 my $cmd = "$firefox_bin --no-remote " .
   "--profile \"$temp_profile\" " .
-  "--private-window \"$url\" " .
-  ">/dev/null 2>&1 &";
+  "\"$url\" >/dev/null 2>&1 &";
 system($cmd) == 0 
   or die "Failed to execute Firefox: $?\n";
 
