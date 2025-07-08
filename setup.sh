@@ -4,9 +4,9 @@ DIRS="
 books
 C
 C++
-documents
-freebsd
+Documents
 perl
+pics
 wallpapers
 "
 
@@ -50,6 +50,12 @@ fi
 if [ ! -d ~/Downloads/scrcpy ]; then
   git clone https://github.com/Genymobile/scrcpy.git ~/Downloads/scrcpy
 fi
+
+cp ~/dotfiles/.kshrc ~/.kshrc
+cp ~/dotfiles/.xinitrc ~/.xinitrc
+cp ~/dotfiles/.Xresources ~/.Xresources
+cp ~/dotfiles/.vimrc ~/.vimrc
+cp ~/Storage/wallpapers/* ~/wallpapers/
 
 su <<EOF
 
@@ -195,9 +201,9 @@ echo '@reboot root echo 85 > \
 /sys/class/power_supply/BAT0/charge_control_end_threshold' \
 | tee -a /etc/crontab >/dev/null
 
-# find / -iname '*gnome*' -exec rm -rf {} \; 2>/dev/null
-
 chsh -s "/bin/ksh" "jbm"
+
+find / -iname '*gnome*' -exec rm -rf {} \; 2>/dev/null
 EOF
 
 
