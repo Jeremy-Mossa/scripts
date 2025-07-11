@@ -130,7 +130,7 @@ random_click() {
         fi
         if [ -z "$window_id" ]; then
             echo "Scrcpy window not found"
-            sleep 20
+            sleep 20000
             continue
         fi
         
