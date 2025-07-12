@@ -51,142 +51,97 @@ if [ ! -d ~/Downloads/scrcpy ]; then
   git clone https://github.com/Genymobile/scrcpy.git ~/Downloads/scrcpy
 fi
 
+cp ~/dotfiles/.fluxbox/autostart ~/.fluxbox/
 cp ~/dotfiles/.kshrc ~/.kshrc
 cp ~/dotfiles/.xinitrc ~/.xinitrc
 cp ~/dotfiles/.Xresources ~/.Xresources
 cp ~/dotfiles/.vimrc ~/.vimrc
 cp ~/Storage/wallpapers/* ~/wallpapers/
 
-su <<EOF
-
-PKG="
-aalib
-acpi
-adb 
-boxes
-bubblewrap
-clang
-cmake
-cronie
-dillo
-dkms
-fastboot
-fastfetch
-feh
-ffmpeg
-ffmpeg-devel
-ffmpeg-libs
-figlet
-firefox-esr
-firejail
-fluxbox
-fzf
-gcc
-giflib
-gimp
-git
-gnucash
-gtk3-devel
-htop
-icecat
-inxi
-java-17-openjdk-devel
-ksh
-libcgif
-libjpeg
-libpng
-libusb1-devel
-linux-firmware
-lolcat
-meson
-mullvad-browser
-mullvad-vpn
-mupdf
-mutt
-net-tools
-ninja-build
-perl-Gtk3
-perl-HTTP-Tiny
-perl-JSON-PP
-pkgconf-pkg-config
-prename
-python3-numpy
-python3-opencv
-qmake
-rclone
-redshift
-rtorrent
-SDL2-devel
-slim
-source-foundry-hack-fonts
-ssh
-ssh-keygen
-startx
-texlive
-tldr
-tmux
-toilet
-vim
-vimb
-vlc
-waydroid
-xclip
-xdotool
-xlockmore
-xorg
-xorg-x11-font-utils
-xorg-x11-server-Xorg
-xorg-x11-server-Xvfb
-xorg-x11-server-Xwayland
-xrdb
-xsecurelock
-xterm
-xz-devel
-xz-lzma-compat
-yt-dlp
-"
-
-for package in $PKG; do
-  yes | dnf install "$package"
-done
-
-# Add to the render group
-usermod -aG render jbm
-
-# Define the udev rules for all major phone/tablet vendors
-UDEV_RULES='SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="04e8", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="12d1", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="2717", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="22d9", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="2d95", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="2a70", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="22b8", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="1004", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="054c", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="0bb4", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="0b05", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="17ef", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="19d2", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="1949", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
-SUBSYSTEM=="usb", ATTR{idVendor}=="0489", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"'
-
-UDEV_FILE="/etc/udev/rules.d/99-android-detect.rules"
-
-# Check if the rules already exist in the file
-if [ -f "$UDEV_FILE" ] && echo "$UDEV_RULES" | grep -Fx -f - "$UDEV_FILE" >/dev/null; then
-    echo "udev rules already exist, skipping..."
+###############################################################
+# Download android studio
+ANDROID_SDK_DIR="$HOME/android-sdk"
+CMD_LINE_TOOLS_DIR="$ANDROID_SDK_DIR/cmdline-tools/latest"
+DOWNLOAD_URL="[invalid url, do not cite]"
+if [ -f "$CMD_LINE_TOOLS_DIR/bin/sdkmanager" ]; then
+    echo "Command-line tools already installed at $CMD_LINE_TOOLS_DIR"
 else
-    # Echo the rules to the file
-    echo "$UDEV_RULES" | tee "$UDEV_FILE" >/dev/null
-    # Set correct permissions
-    chmod 644 "$UDEV_FILE"
-    echo "udev rules added."
+    echo "Downloading Android SDK command-line tools..."
+    mkdir -p "$CMD_LINE_TOOLS_DIR"
+    wget -O "$CMD_LINE_TOOLS_DIR/cmdline-tools.zip" "$DOWNLOAD_URL" || {
+        echo "Error: Failed to download command-line tools" >&2
+        exit 1
+    }
+    unzip "$CMD_LINE_TOOLS_DIR/cmdline-tools.zip" -d "$CMD_LINE_TOOLS_DIR" || {
+        echo "Error: Failed to extract command-line tools" >&2
+        exit 1
+    }
+    mv "$CMD_LINE_TOOLS_DIR/cmdline-tools"/* "$CMD_LINE_TOOLS_DIR"
+    rm -rf "$CMD_LINE_TOOLS_DIR/cmdline-tools"
+    rm "$CMD_LINE_TOOLS_DIR/cmdline-tools.zip"
+fi
+###############################################################
+
+
+###############################################################
+# Fluxbox dock -- different time format
+INIT_FILE="$HOME/.fluxbox/init"
+CLOCK_FORMAT="session.screen0.strftimeFormat: %A -- %e %B %Y -- %H:%M"
+if [ -f "$INIT_FILE" ]; then
+    if ! grep -q "session.screen0.strftimeFormat" "$INIT_FILE"; then
+        echo "$CLOCK_FORMAT" >> "$INIT_FILE"
+    else
+        sed -i "s/session.screen0.strftimeFormat.*/$CLOCK_FORMAT/" \
+            "$INIT_FILE"
+    fi
+else
+    mkdir -p "$HOME/.fluxbox"
+    echo "$CLOCK_FORMAT" > "$INIT_FILE"
+fi
+###############################################################
+
+################################################################
+# Append to fluxbox keys file
+# Define the path to the keys file
+KEYS_FILE="$HOME/.fluxbox/keys"
+
+# Create ~/.fluxbox directory and keys file if they don't exist
+if [ ! -f "$KEYS_FILE" ]; then
+    mkdir -p "$HOME/.fluxbox"
+    touch "$KEYS_FILE"
 fi
 
-# Reload udev rules
-udevadm control --reload-rules
-udevadm trigger
+# Define the lines to check/append as a newline-separated string
+KEYS="# GUI in current workspace
+Control Mod1 t :ExecCommand xterm -geometry 65x15
+Control Mod1 h :ExecCommand xterm -geometry 65x53
+Control Mod1 b :ExecCommand /usr/bin/perl ~/scripts/grok2.pl
+Control Mod1 d :ExecCommand dillo
+Control Mod1 i :ExecCommand icecat
+Control Mod1 l :ExecCommand libreoffice
+Control Mod1 v :ExecCommand vimb
+Control Mod1 f :Maximize"
+
+# Function to check and append a single line if it doesn't exist
+check_and_append_line() {
+    line="$1"
+    # Escape special characters for grep
+    escaped_line=$(echo "$line" | sed 's/[\[\.*^$/]/\\&/g')
+    if ! grep -Fx "$escaped_line" "$KEYS_FILE" >/dev/null; then
+        echo "$line" >> "$KEYS_FILE"
+    fi
+}
+
+# Process each line
+echo "$KEYS" | while IFS= read -r line; do
+    check_and_append_line "$line"
+done
+################################################################
+
+# Increase workspaces in Fluxbox from 4 to 6
+if ! grep -Fx "session.screen0.workspaces: 6" "$HOME/.fluxbox/init" >/dev/null; then
+    echo "session.screen0.workspaces: 6" >> "$HOME/.fluxbox/init"
+fi
 
 # Configure display manager
 if command -v slim > /dev/null && ! systemctl status gdm | grep -q "disabled"; then
@@ -197,13 +152,89 @@ else
   echo "gdm status: $gdmstatus"
 fi
 
-echo '@reboot root echo 85 > \
-/sys/class/power_supply/BAT0/charge_control_end_threshold' \
-| tee -a /etc/crontab >/dev/null
+if ! getent passwd jbm | grep -q ":jbm:.*:/bin/ksh$"; then
+  chsh -s "/bin/ksh" "jbm"
+fi
 
-chsh -s "/bin/ksh" "jbm"
+###############################################################
+# Exit on any error
+set -e 
 
-find / -iname '*gnome*' -exec rm -rf {} \; 2>/dev/null
+# Define variables
+SSH_DIR="$HOME/.ssh"
+KEY_TYPE="ed25519"
+KEY_FILE="$SSH_DIR/id_$KEY_TYPE"
+COMMENT="$(whoami)@$(hostname)"
+GROK_USERNAME_FILE="$SSH_DIR/grok_username"
+GROK_PASSWORD_FILE="$SSH_DIR/grok_password"
+LINE_USERNAME_FILE="$SSH_DIR/line_username"
+LINE_PASSWORD_FILE="$SSH_DIR/line_password"
+
+# Create ~/.ssh directory if it doesn't exist
+if [ ! -d "$SSH_DIR" ]; then
+    mkdir "$SSH_DIR"
+    chmod 700 "$SSH_DIR"
+fi
+
+# Prompt for Grok username and save it if DNE
+if [ ! -f "$GROK_USERNAME_FILE" ]; then
+    echo "Enter your Grok username:"
+    read grok_username
+    echo "$grok_username" > "$GROK_USERNAME_FILE"
+    chmod 600 "$GROK_USERNAME_FILE"
+fi
+
+# Prompt for Grok password and save it if DNE
+if [ ! -f "$GROK_PASSWORD_FILE" ]; then
+    echo "Enter your Grok password:"
+    read grok_password
+    echo "$grok_password" > "$GROK_PASSWORD_FILE"
+    chmod 600 "$GROK_PASSWORD_FILE"
+fi
+
+# Prompt for Line username and save it if DNE
+if [ ! -f "$LINE_USERNAME_FILE" ]; then
+    echo "Enter your Line username:"
+    read line_username
+    echo "$line_username" > "$LINE_USERNAME_FILE"
+    chmod 600 "$LINE_USERNAME_FILE"
+fi
+
+# Prompt for Line password and save it if DNE
+if [ ! -f "$LINE_PASSWORD_FILE" ]; then
+    echo "Enter your Line password:"
+    read line_password
+    echo "$line_password" > "$LINE_PASSWORD_FILE"
+    chmod 600 "$LINE_PASSWORD_FILE"
+fi
+
+# Generate SSH key pair if it doesn't exist
+if [ ! -f "$KEY_FILE" ]; then
+    ssh-keygen -t "$KEY_TYPE" -f "$KEY_FILE" -C "$COMMENT" -N ""
+fi
+
+# Set correct permissions
+chmod 600 "$KEY_FILE"
+chmod 644 "$KEY_FILE.pub"
+
+# Optionally, create a basic ~/.ssh/config file
+CONFIG_FILE="$SSH_DIR/config"
+if [ ! -f "$CONFIG_FILE" ]; then
+    cat > "$CONFIG_FILE" <<EOF
+# SSH client configuration
+Host *
+    StrictHostKeyChecking ask
+    IdentityFile $KEY_FILE
 EOF
+    chmod 600 "$CONFIG_FILE"
+fi
 
-
+# Verify setup
+echo "SSH setup complete for $(whoami)."
+echo "Private key: $KEY_FILE"
+echo "Public key: $KEY_FILE.pub"
+echo "Grok username saved to: $GROK_USERNAME_FILE"
+echo "Grok password saved to: $GROK_PASSWORD_FILE"
+echo "Public key contents:"
+cat "$KEY_FILE.pub"
+###############################################################
