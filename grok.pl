@@ -21,31 +21,30 @@ close($password_fh);
 my $temp_profile = tempdir(CLEANUP => 1);
 my $firefox_bin = "/usr/bin/firefox";
 my $url = "https://grok.com";
-my $cmd = "$firefox_bin --no-remote " .
-  "--profile \"$temp_profile\" " .
+my $cmd = "/bin/chromium-browser " .
   "\"$url\" >/dev/null 2>&1 &";
 system($cmd) == 0 
-  or die "Failed to execute Firefox: $?\n";
+  or die "Failed to execute Chromium $?\n";
 
 sleep 7;
 system('xdotool search --onlyvisible --name ' .
-  '"Firefox" set_window --name "Grok_Login"');
+  '"Chromium" set_window --name "Grok_Login"');
 system('xdotool search --onlyvisible --name ' .
   '"Grok_Login" windowactivate key ctrl+alt+f');
 sleep 1.5;
 
-system('xdotool mousemove 1870 180');
-system('xdotool click 1');
-sleep 4;
-system('xdotool mousemove 480 630');
-system('xdotool click 1');
-sleep 6;
-system("xdotool type '$username'");
-system('xdotool mousemove 1400 700');
-system('xdotool click 1');
-sleep 4;
-system("xdotool type '$password'");
-system('xdotool mousemove 1400 730');
-system('xdotool click 1');
-system('xdotool mousemove 430 50');
-system('xdotool click 1');
+# system('xdotool mousemove 1870 180');
+# system('xdotool click 1');
+# sleep 4;
+# system('xdotool mousemove 480 630');
+# system('xdotool click 1');
+# sleep 6;
+# system("xdotool type '$username'");
+# system('xdotool mousemove 1400 700');
+# system('xdotool click 1');
+# sleep 4;
+# system("xdotool type '$password'");
+# system('xdotool mousemove 1400 730');
+# system('xdotool click 1');
+# system('xdotool mousemove 430 50');
+# system('xdotool click 1');
