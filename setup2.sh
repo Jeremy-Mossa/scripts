@@ -138,6 +138,7 @@ adb shell recovery --install /sdcard/open_gappsx86.zip
 
 systemctl enable libvirtd
 systemctl start libvirtd
+
 echo "Configuring KVM permissions for user jbm..."
 usermod -aG render jbm
 usermod -aG kvm jbm
@@ -152,9 +153,6 @@ else
     echo "Error: KVM device not found!" >&2
     exit 1
 fi
-
-# Configuration step for VirtualBox
-/sbin/vboxconfig
 
 # Define the udev rules for all major phone/tablet vendors
 UDEV_RULES='SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", ACTION=="add", RUN+="/usr/sbin/runuser -u jbm -- /home/jbm/scripts/android-detect.sh"
