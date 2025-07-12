@@ -83,7 +83,6 @@ toilet
 vim
 vimb
 vlc
-waydroid
 xclip
 xdotool
 xev
