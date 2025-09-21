@@ -5,12 +5,14 @@ use File::Temp qw(tempdir);
 
 
 # Wait until script has internet access
-while (1) {
-    if (system("ping -c 1 google.com > /dev/null 2>&1") == 0) {
-        last;
-    }
-    sleep 60;
-}
+# while (1) {
+#     if (system("ping -c 1 google.com > /dev/null 2>&1") == 0) {
+#         last;
+#     }
+#     sleep 60;
+# }
+
+print "Connected\n";
 
 # Check if Xvfb is running, start if not
 system("pidof Xvfb || Xvfb :98 -ac -screen 0 1920x1080x24 >/dev/null 2>&1 &");

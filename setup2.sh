@@ -59,6 +59,7 @@ mupdf
 mutt
 net-tools
 ninja-build
+perl-doc
 perl-Gtk3
 perl-HTTP-Tiny
 perl-JSON-PP
@@ -80,6 +81,7 @@ texlive
 tldr
 tmux
 toilet
+urw-fonts
 vim
 vimb
 vlc
@@ -95,6 +97,7 @@ xorg-x11-server-Xwayland
 xrdb
 xsecurelock
 xterm
+xwininfo
 xz-devel
 xz-lzma-compat
 yt-dlp
@@ -189,7 +192,7 @@ udevadm control --reload-rules
 udevadm trigger
 
 
-# Setup SLiM
+### Begin SLiM setup
 # Define the SLiM configuration file
 SLIM_CONF="/etc/slim.conf"
 
@@ -204,6 +207,7 @@ if grep -q "^current_theme" "$SLIM_CONF" >/dev/null 2>&1; then
 else
     echo "current_theme original" >> "$SLIM_CONF" 2>/dev/null
 fi
+### End SLiM setup
 
 
 # Configure display manager
