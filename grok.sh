@@ -19,6 +19,7 @@ done
 
 # Get grok on WS 1
 if ! wmctrl -l | grep -q "GROK"; then
+  rm $HOME/.config/chromium/SingletonLock >/dev/null 2>&1
   /bin/chromium-browser --window-name="GROK" \
     https://grok.com >/dev/null 2>&1 &
   disown
