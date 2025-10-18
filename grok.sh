@@ -23,7 +23,7 @@ if ! wmctrl -l | grep -q "GROK"; then
   /bin/chromium-browser --window-name="GROK" \
     https://grok.com >/dev/null 2>&1 &
   disown
-  sleep 2
+  sleep 0.1
   wmctrl -r "GROK" -t 0
 fi
 
