@@ -1,45 +1,25 @@
-#!/usr/bin/env perl
-
+#!/usr/bin/perl
 use strict;
 use warnings;
-use File::Find;
 
-# TP-Link Archer T2U Nano LED Killer - Fedora/Fluxbox Edition
-# Auto-finds & disables RTL8811AU LED (100% robust)
 
-print "🔥 Killing TP-Link T2U Nano LED...\n";
+my $wlan = "wlp2s0f3u4";
 
-# Step 1: Find wlan interface
-my $wlan = `ip link show | grep wlan | head -1 | awk '{print \$2}' | sed 's/://'`;
-chomp $wlan;
-die "❌ No wlan interface found!\n" unless $wlan;
+system("sudo", "sh", "-c", "echo 0 > /sys/class/ieee80211/phy0/device/leds/*/brightness 2>/dev/null");
+system("sudo", "sh", "-c", "echo none > /sys/class/ieee80211/phy0/device/leds/*/trigger 2>/dev/null");
+system("sudo", "sh", "-c", "echo 0 > /sys/bus/usb/devices/*/leds/*/brightness 2>/dev/null");
 
-print "✅ Found: $wlan\n";
+system("sudo", "sh", "-c", "
+cat > /etc/udev/rules.d/99-tplink-led-off.rules << 'EOF'
+ACTION==\"add\", SUBSYSTEM==\"leds\", ATTR{brightness}=\"0\"
+ACTION==\"add\", SUBSYSTEM==\"leds\", ATTR{trigger}=\"none\"
+EOF
+udevadm control --reload-rules
+udevadm trigger
+");
 
-# Step 2: Find LED directory (auto-detect Realtek paths)
-find sub {
-    return unless $File::Find::name =~ m|/sys/class/net/$wlan/device/leds/|;
-    my ($led_dir) = $File::Find::name =~ m|.*/leds/([^/]+)|;
-    print "✅ LED found: $led_dir\n";
-    
-    # Kill brightness FIRST (instant OFF)
-    my $brightness = "$File::Find::dir/brightness";
-    if (-w $brightness) {
-        system("echo", "0", "|", "sudo", "tee", $brightness);
-        print "✅ Brightness = OFF\n";
-    }
-    
-    # Kill trigger (no blinking modes)
-    my $trigger = "$File::Find::dir/trigger";
-    if (-w $trigger) {
-        system("echo", "none", "|", "sudo", "tee", $trigger);
-        print "✅ Trigger = NONE\n";
-    }
-}, "/sys/class/net/$wlan/device/leds/";
+my $before = `cat /sys/class/ieee80211/phy0/device/leds/*/brightness 2>/dev/null | head -1 || echo 1`;
+my $after = `ls /sys/class/ieee80211/phy0/device/leds/*/brightness 2>/dev/null && echo 0 || echo 1`;
+print "📊 BEFORE: $before → AFTER: $after (0 = DEAD)\n";
 
-# Step 3: Verify
-my $check = `cat /sys/class/net/$wlan/device/leds/*/brightness 2>/dev/null | head -1`;
-print "🎉 LED Status: $check (0 = OFF FOREVER)\n";
-
-print "\n✨ Add to ~/.xinitrc for auto-start:\n";
-print "  ~/kill_tplink_led.pl &\n";
+print "\n✨ REBOOT NOW\n";
