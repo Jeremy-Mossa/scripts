@@ -112,6 +112,8 @@ ncurses-libs.i686
 bzip2-libs.i686
 libguestfs-tools-c
 parallel
+tlp
+tlp-rdw
 "
 
 for package in $PKG; do
