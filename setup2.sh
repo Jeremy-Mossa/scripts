@@ -114,6 +114,7 @@ libguestfs-tools-c
 parallel
 tlp
 tlp-rdw
+calibre
 "
 
 for package in $PKG; do
