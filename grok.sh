@@ -11,7 +11,7 @@ for i in `seq 2 6`; do
         xterm -T "XTerm WS$i" &
       fi
       
-      sleep 0.1
+      sleep 0.25
       wmctrl -r "XTerm WS$i" -t $(($i - 1))
       wmctrl -r "XTerm WS$i" -b add,maximized_vert,maximized_horz
   fi
@@ -23,7 +23,7 @@ if ! wmctrl -l | grep -q "GROK"; then
   /bin/chromium-browser --window-name="GROK" \
     https://grok.com >/dev/null 2>&1 &
   disown
-  sleep 0.1
+  sleep 0.25
   wmctrl -r "GROK" -t 0
 fi
 
