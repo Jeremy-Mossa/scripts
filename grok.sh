@@ -10,9 +10,8 @@ for i in `seq 2 6`; do
       else 
         xterm -T "XTerm WS$i" &
       fi
-      
-      sleep 0.25
-      wmctrl -r "XTerm WS$i" -t $(($i - 1))
+      sleep 0.2
+      wmctrl -r "XTerm WS$i" -t $(($i - 1)) 
       wmctrl -r "XTerm WS$i" -b add,maximized_vert,maximized_horz
   fi
 done
