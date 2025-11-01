@@ -61,6 +61,7 @@ net-tools
 ninja-build
 perl-doc
 perl-Gtk3
+perl-WWW-Curl
 perl-HTTP-Tiny
 perl-JSON-PP
 pkgconf-pkg-config
