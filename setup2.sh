@@ -115,6 +115,7 @@ parallel
 tlp
 tlp-rdw
 calibre
+mpv
 "
 
 for package in $PKG; do
