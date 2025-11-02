@@ -68,6 +68,7 @@ pkgconf-pkg-config
 prename
 python3-numpy
 python3-opencv
+qalculate-qt
 qmake
 rclone
 redshift
