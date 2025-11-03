@@ -13,7 +13,7 @@ for i in `seq 2 6`; do
       # this backgrounds a loop that move and maximize xterms
       (
         while ! xdotool search --name "XTerm WS$i" >/dev/null; do
-        sleep 0.25
+        sleep 0.5
         done
         wmctrl -r "XTerm WS$i" -t $(($i - 1))
         wmctrl -r "XTerm WS$i" -b add,maximized_vert,maximized_horz
@@ -27,6 +27,7 @@ if ! wmctrl -l | grep -q "GROK"; then
   /bin/chromium-browser --window-name="GROK" \
     https://grok.com >/dev/null 2>&1 &
   disown
+  sleep 0.5
   wmctrl -r "GROK" -t 0
 fi
 
