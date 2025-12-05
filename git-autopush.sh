@@ -13,6 +13,13 @@ $HOME/dotfiles
 $HOME/Storage"
 # ← add more repos here later if needed
 
+# update the dotfiles
+/bin/crontab -l > $HOME/dotfiles/.cron
+cp $HOME/.kshrc $HOME/dotfiles/.kshrc
+cp $HOME/.xinitrc $HOME/dotfiles/.xinitrc
+cp $HOME/.vimrc $HOME/dotfiles/.vimrc
+cp $HOME/.Xresources $HOME/dotfiles/.Xresources
+
 for repo in $REPOS; do
     [ ! -d "$repo/.git" ] && {
         printf 'Skipping %s (not a git repository)\n' "$repo"
