@@ -18,7 +18,7 @@ while (1) {
 print "Connected\n";
 
 # Check if Xvfb is running, start if not
-system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1080x24 >/dev/null 2>&1 &");
+system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1200x24 >/dev/null 2>&1 &");
 sleep 5;
 
 # Set DISPLAY environment variable
@@ -60,6 +60,7 @@ if ($window_id) {
 }
 
 sleep 3;
+system("scrot ~/Downloads/firefox.png");
 
 system('xdotool mousemove 1690 105');
 system('xdotool click 1');
