@@ -120,6 +120,7 @@ calibre
 mpv
 dbus-x11
 clipit
+thunderbird
 "
 
 for package in $PKG; do
