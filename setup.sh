@@ -58,30 +58,6 @@ cp ~/dotfiles/.Xresources ~/.Xresources
 cp ~/dotfiles/.vimrc ~/.vimrc
 cp ~/Storage/wallpapers/* ~/wallpapers/
 
-###############################################################
-# Download android studio
-ANDROID_SDK_DIR="$HOME/android-sdk"
-CMD_LINE_TOOLS_DIR="$ANDROID_SDK_DIR/cmdline-tools/latest"
-DOWNLOAD_URL="[invalid url, do not cite]"
-if [ -f "$CMD_LINE_TOOLS_DIR/bin/sdkmanager" ]; then
-    echo "Command-line tools already installed at $CMD_LINE_TOOLS_DIR"
-else
-    echo "Downloading Android SDK command-line tools..."
-    mkdir -p "$CMD_LINE_TOOLS_DIR"
-    wget -O "$CMD_LINE_TOOLS_DIR/cmdline-tools.zip" "$DOWNLOAD_URL" || {
-        echo "Error: Failed to download command-line tools" >&2
-        exit 1
-    }
-    unzip "$CMD_LINE_TOOLS_DIR/cmdline-tools.zip" -d "$CMD_LINE_TOOLS_DIR" || {
-        echo "Error: Failed to extract command-line tools" >&2
-        exit 1
-    }
-    mv "$CMD_LINE_TOOLS_DIR/cmdline-tools"/* "$CMD_LINE_TOOLS_DIR"
-    rm -rf "$CMD_LINE_TOOLS_DIR/cmdline-tools"
-    rm "$CMD_LINE_TOOLS_DIR/cmdline-tools.zip"
-fi
-###############################################################
-
 
 ###############################################################
 # Fluxbox dock -- different time format
@@ -238,3 +214,38 @@ echo "Grok password saved to: $GROK_PASSWORD_FILE"
 echo "Public key contents:"
 cat "$KEY_FILE.pub"
 ###############################################################
+
+# ==============================================================================
+# Below is from Grok 4.1
+# ==============================================================================
+
+echo "Configuring SSH remotes (ssh://git@github.com/…) for your repositories..."
+
+# 1. ~/scripts
+if [ -d ~/scripts/.git ]; then
+    git -C ~/scripts remote set-url origin ssh://git@github.com/Jeremy-Mossa/scripts.git
+    echo "→ ~/scripts   → SSH remote set"
+fi
+
+# 2. ~/dotfiles
+if [ -d ~/dotfiles/.git ]; then
+    git -C ~/dotfiles remote set-url origin ssh://git@github.com/Jeremy-Mossa/dotfiles.git
+    echo "→ ~/dotfiles  → SSH remote set"
+fi
+
+# 3. ~/Storage – was downloaded as zip → no git history → replace with real SSH clone
+if [ -d ~/Storage ] || [ -d ~/Storage ]; then
+    echo "Replacing ~/Storage zip extract with proper SSH-cloned repository..."
+    rm -rf ~/Storage
+    git clone ssh://git@github.com/Jeremy-Mossa/Storage.git ~/Storage
+    echo "→ ~/Storage   → cloned over SSH (now fully functional)"
+fi
+
+# Optional pretty output so you can see it worked
+echo ""
+echo "Final remote configuration:"
+echo "─────────────────────────────"
+git -C ~/scripts  remote get-url origin 2>/dev/null || echo "scripts:   not found"
+git -C ~/dotfiles remote get-url origin 2>/dev/null || echo "dotfiles:  not found"
+git -C ~/Storage  remote get-url origin 2>/dev/null || echo "Storage:   not found"
+echo ""

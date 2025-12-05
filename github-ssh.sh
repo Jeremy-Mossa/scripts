@@ -3,7 +3,7 @@
 # Configuration
 EMAIL=""
 GITHUB_USERNAME="Jeremy-Mossa"
-SSH_KEY_PATH="$HOME/.ssh/id_rsa"
+SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
 
 # Function to check if a program is installed
 check_program() {

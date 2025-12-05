@@ -118,6 +118,8 @@ tlp
 tlp-rdw
 calibre
 mpv
+dbus-x11
+clipit
 "
 
 for package in $PKG; do
