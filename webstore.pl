@@ -60,7 +60,6 @@ if ($window_id) {
 }
 
 sleep 3;
-system("scrot ~/Downloads/firefox.png");
 
 system('xdotool mousemove 1690 105');
 system('xdotool click 1');
@@ -94,7 +93,7 @@ foreach my $char (split //, $command) {
 system("xdotool key Return");
 sleep 1;
 
-system("scrot webstore.png");
+# system("scrot webstore.png");
 
 # Kill Xvfb
 system("pkill Xvfb");
