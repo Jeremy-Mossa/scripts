@@ -121,7 +121,11 @@ mpv
 dbus-x11
 clipit
 thunderbird
+libavcodec-freeworld
 "
+
+dnf install -y \
+  https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 
 for package in $PKG; do
   if which "$package" >/dev/null 2>&1 \
@@ -131,6 +135,9 @@ for package in $PKG; do
     yes | dnf install "$package"
   fi
 done
+
+# ensure .mkv are playable
+dnf swap -y ffmpeg-free ffmpeg --allowerasing
 
 # For some reason dnf wouldn't do it
 yum install VirtualBox-7.1
