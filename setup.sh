@@ -37,9 +37,6 @@ fi
 if [ ! -d ~/dotfiles ]; then
   git clone https://github.com/Jeremy-Mossa/dotfiles ~/dotfiles
 fi
-if [ ! -d ~/flutter ]; then
-  git clone https://github.com/flutter/flutter.git -b stable ~/flutter
-fi
 
 # Create symbolic link if it doesn't exist
 if [ ! -e ~/downloads ]; then
@@ -56,9 +53,9 @@ if [ ! -d ~/Storage ]; then
   mv Storage-main ~/Storage
 fi
 
-if [ ! -d ~/Downloads/scrcpy ]; then
-  git clone https://github.com/Genymobile/scrcpy.git ~/Downloads/scrcpy
-fi
+#if [ ! -d ~/Downloads/scrcpy ]; then
+#  git clone https://github.com/Genymobile/scrcpy.git ~/Downloads/scrcpy
+#fi
 
 cp ~/dotfiles/.fluxbox/autostart ~/.fluxbox/
 cp ~/dotfiles/.kshrc ~/.kshrc
