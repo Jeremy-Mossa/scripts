@@ -10,6 +10,7 @@
 
 REPOS="$HOME/scripts
 $HOME/dotfiles
+$HOME/Documents/tasks
 $HOME/Storage"
 # ← add more repos here later if needed
 
