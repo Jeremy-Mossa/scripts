@@ -10,6 +10,7 @@ phone
 pics
 videos
 wallpapers
+tasks
 "
 
 mkdir -p ~/.config
@@ -26,6 +27,8 @@ for dir in $DIRS; do
     mkdir ~/$dir
   fi
 done
+
+mv ~/tasks ~/Documents/tasks
 
 # Clone git repositories if they don't exist
 if [ ! -d ~/scripts ]; then

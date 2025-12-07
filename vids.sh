@@ -2,13 +2,11 @@
 
 # vids.sh - List the latest x videos from each channel in channels.txt
 
-
-# vids-audio.sh - Fetch latest videos, download new ones as high-quality Opus audio,
-#                 and add downloaded URLs to ignore.txt
+cd "$HOME/phone" || { echo "Error: Cannot change to $HOME/phone"; exit 1; }
 
 CHANNELS_FILE="$HOME/Documents/channels.txt"
 IGNORE_FILE="$HOME/phone/ignore.txt"
-MAX_ITEMS=10  # How many latest videos to consider per channel
+MAX_ITEMS=10  # How many videos channel
 
 # Create ignore file if missing
 [ -f "$IGNORE_FILE" ] || touch "$IGNORE_FILE"
@@ -34,19 +32,19 @@ while IFS= read -r channel || [ -n "$channel" ]; do
     while IFS= read -r url; do
         # Skip if already downloaded
         if echo "$IGNORED" | grep -Fx "$url" >/dev/null; then
-            echo "   Skipping (already downloaded): $url"
             continue
         fi
 
-        echo "   Downloading audio: $url"
+        if echo "$channel" | grep -q "ThePrime" && echo "$title" | grep -qi "standup"; then
+            continue
+        fi
 
-        # Download best audio as Opus
+        # extract best audio as Opus
         if yt-dlp -f bestaudio --extract-audio --audio-format opus \
                   --output "%(title)s.%(ext)s" \
                   "$url"; then
             # On success, add URL to ignore list
             echo "$url" >> "$IGNORE_FILE"
-            echo "   Added to ignore list."
         else
             echo "   Failed to download: $url"
         fi
