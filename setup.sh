@@ -8,11 +8,16 @@ Documents
 perl
 pics
 wallpapers
+videos
 "
+
+mkdir -p ~/.config
+echo "enabled=False" > ~/.config/user-dirs.conf
 
 # Remove default directories
 rm -rf ~/Desktop ~/Videos ~/Music \
-  ~/Templates ~/Pictures 2>/dev/null
+  ~/Templates ~/Pictures ~/Public \
+  >/dev/null 2>/dev/null
 
 # Create directories if they don't exist
 for dir in $DIRS; do
