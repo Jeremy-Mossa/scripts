@@ -6,9 +6,10 @@ C
 C++
 Documents
 perl
+phone
 pics
-wallpapers
 videos
+wallpapers
 "
 
 mkdir -p ~/.config
