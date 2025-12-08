@@ -21,6 +21,26 @@ print "Connected\n";
 system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1200x24 >/dev/null 2>&1 &");
 sleep 5;
 
+# my $resolution = "1920x1200";
+# my $output_file = "~/Downloads/webstore_recording.mp4";
+# my $ffmpeg_pid = fork();
+# if (!$ffmpeg_pid) {
+#     # Child process: run ffmpeg
+#     exec(
+#       "ffmpeg -y " .
+#       "-f x11grab " .
+#       "-video_size $resolution " .
+#       "-framerate 30 " .
+#       "-i :99 " .
+#       "-c:v libx264 " .
+#       "-preset fast " .
+#       "-crf 23 " .
+#       "-pix_fmt yuv420p " .
+#       "$output_file"
+#     );
+#     exit;  # In case exec fails
+# }
+
 # Set DISPLAY environment variable
 $ENV{DISPLAY} = ":99";
 
@@ -83,25 +103,24 @@ system('xdotool mousemove 940 747');
 system('xdotool click 1');
 sleep 10;
 system("xdotool key Ctrl+Shift+k");
+# system("scrot /downloads/webstore.png");
 
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
-sleep 1;
-foreach my $char (split //, $command) {
-    if ($char eq "'") {
-        system("xdotool type \"'\" >/dev/null 2>&1");
-    } else {
-        system("xdotool type '$char' >/dev/null 2>&1");
-    }
-    system("sleep 0.03");
-}
-#foreach my $char (split //, $command) {
-#    system("xdotool type '$char'");
-#    system("sleep 0.03");
-#}
-system("xdotool key Return");
+
 sleep 1;
 
-system("scrot /tmp/webstore.png");
+foreach my $char (split //, $command) {
+    system("xdotool type '$char'");
+    system("sleep 0.03");
+}
+system("xdotool key Return");
+sleep 5;
+
+# system("scrot /downloads/webstore.png");
+
+# Stop ffmpeg (send SIGINT to finish clean)
+# kill 'INT', $ffmpeg_pid;
+# waitpid($ffmpeg_pid, 0);
 
 # Kill Xvfb
 system("pkill Xvfb");
