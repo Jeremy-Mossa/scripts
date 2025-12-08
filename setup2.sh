@@ -122,6 +122,8 @@ dbus-x11
 clipit
 thunderbird
 libavcodec-freeworld
+polybar
+rofi
 "
 
 dnf install -y \
@@ -261,6 +263,23 @@ else
     fi
 fi
 
+# disable fluxbox system tray and remove from toolbar list
+INIT_FILE="${HOME}/.fluxbox/init"
+
+# Replace existing toolbar.visible line with false
+if grep -q '^[[:space:]]*session\.screen0\.toolbar\.visible:' "${INIT_FILE}"; then
+    sed -i 's/^[[:space:]]*session\.screen0\.toolbar\.visible:.*/session.screen0.toolbar.visible: false/' "${INIT_FILE}"
+fi
+
+# If the line doesn't exist, append it
+if ! grep -q '^[[:space:]]*session\.screen0\.toolbar\.visible:' "${INIT_FILE}"; then
+    printf '%s\n' 'session.screen0.toolbar.visible: false' >> "${INIT_FILE}"
+fi
+sed -i '/^[[:space:]]*session\.screen0\.toolbar\.tools:/ {
+    s/[[:space:]]*,[[:space:]]*systemtray[[:space:]]*\([,:]\|$\)/\1/g
+    s/^[[:space:]]*systemtray[[:space:]]*,//
+}' "${INIT_FILE}"
+# finish disable system tray
 
 echo '@reboot root echo 85 > \
 /sys/class/power_supply/BAT0/charge_control_end_threshold' \
