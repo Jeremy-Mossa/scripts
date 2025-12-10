@@ -32,6 +32,7 @@ figlet
 firefox-esr
 firejail
 fluxbox
+fontawesome-fonts
 fzf
 gcc
 giflib
