@@ -52,6 +52,7 @@ libpng
 libusb1-devel
 linux-firmware
 lolcat
+macchanger
 meson
 midori
 mullvad-browser
