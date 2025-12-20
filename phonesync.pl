@@ -38,6 +38,9 @@ if (@good_devices == 0) {
     exit 1;
 }
 
+# rename garbled titles
+system("pname $local_dir*");
+
 print "Found " . scalar(@good_devices) . " authorized device(s).\n\n";
 # list audio files in 
 my $audio_list = `adb shell ls "$android_dir" 2>/dev/null`;
@@ -101,3 +104,14 @@ for my $file (@to_copy) {
     unlink "$local_dir$file"
         or warn "  Could not delete $local_dir$file: $!\n";
 }
+
+# create (or update) the playlist on Android
+my $playlist = "$android_dir" . "playlist.m3u";
+
+# go to android, remove old playlist if exists, create new one
+system('adb', 'shell',
+    "cd \"$android_dir\" && " .
+    "rm -f playlist.m3u && " .
+    "ls *.opus 2>/dev/null | sort > playlist.m3u"
+) == 0
+    or die "Failed to create playlist.m3u\n";
