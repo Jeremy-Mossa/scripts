@@ -23,7 +23,9 @@ while IFS= read -r channel || [ -n "$channel" ]; do
     # Skip empty lines and comments
     case "$channel" in "" | \#*) continue ;; esac
 
-    echo ">> Processing: $channel"
+    handle="@${channel##*@}"
+    handle="${handle%/videos*}"
+    printf "    Processing: %s\n" "$handle" | lolcat -g FF8800:FFCC00 -b
 
     # Get the latest MAX_ITEMS videos (fast flat mode)
     yt-dlp --flat-playlist --playlist-reverse --playlist-items 1-"$MAX_ITEMS" \
