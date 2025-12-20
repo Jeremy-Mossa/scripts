@@ -11,4 +11,6 @@ use Data::Dumper;
 $Data::Dumper::Terse = 1; # just dump data contents
 $Data::Dumper::Indent = 0; # single-line output
 
-
+my $adbstatus = `adb devices`;
+chomp($adbstatus);
+print "$adbstatus\n";

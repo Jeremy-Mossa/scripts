@@ -5,7 +5,7 @@
 cd "$HOME/phone" || { echo "Error: Cannot change to $HOME/phone"; exit 1; }
 
 CHANNELS_FILE="$HOME/Documents/channels.txt"
-IGNORE_FILE="$HOME/phone/ignore.txt"
+IGNORE_FILE="$HOME/Documents/ignore.txt"
 MAX_ITEMS=10  # How many videos channel
 
 # Create ignore file if missing
