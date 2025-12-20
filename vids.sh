@@ -53,5 +53,5 @@ while IFS= read -r channel || [ -n "$channel" ]; do
     echo
 done < "$CHANNELS_FILE"
 
-rm $HOME/phone/*Standup*
+rm $HOME/phone/*Standup* 2>/dev/null
 echo "All done. New audio files are in the current directory."

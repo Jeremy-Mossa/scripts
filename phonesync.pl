@@ -38,8 +38,9 @@ if (@good_devices == 0) {
     exit 1;
 }
 
-# rename garbled titles
-system("pname $local_dir*");
+# get latest vids as audio podcasts to move to android
+system('./vids.sh') == 0
+    or die "vids.sh failed or was interrupted\n";
 
 print "Found " . scalar(@good_devices) . " authorized device(s).\n\n";
 # list audio files in 
@@ -53,20 +54,55 @@ foreach my $line (split /\n/, $audio_list) {
     $on_android{$line} = 1;
 }
 
+
+# rename garbled titles
+opendir(my $dh_rename, $local_dir) or die "Can't open $local_dir: $!";
+while (my $file = readdir($dh_rename)) {
+    next if $file =~ /^\./;  # Skip . and ..
+    next unless $file =~ /\.opus$/i;
+
+    my $new = $file;
+    $new =~ s/'s/s/g;
+    $new =~ s/\[[^]]*\]//g;
+    $new =~ s/ \./\./g;
+    $new =~ s/  +/ /g;  # collapse whitespaces 
+    $new =~ s/ - / /g;
+    $new =~ s/- / /g;
+    $new =~ s/ -/ /g;
+    $new =~ s/, / /g;
+    $new =~ s/[()]//g;
+    $new =~ s/： /_/g;
+    $new =~ s/ ｜ / /g;
+    $new =~ s/\.{3}//g;
+    $new =~ s/\. \. \. //g;
+    $new =~ s/ \. \. \. //g;
+    $new =~ s/\.{2}/\./g;
+    $new =~ s/ \/\///g;
+    $new =~ s/ ⧸⧸//g;
+    $new =~ s/!!//g;
+    $new =~ s/\s+(?=\.m)/ /g;
+
+    if ($new ne $file) {
+        rename("$local_dir/$file", "$local_dir/$new") or warn "Rename $local_dir/$file to $new failed: $!";
+    }
+}
+closedir($dh_rename);
+
 # list of .opus files in local_dir
 my @on_linux;
-opendir(my $dh, $local_dir) 
+opendir(my $dh, $local_dir)
   or die "Cannot open directory $local_dir: $!";
 
 while (my $entry = readdir($dh)) {
-    # skip is not .opus or not regular file
+    # skip if not .opus or not regular file
     next unless $entry =~ /\.opus$/i;
-    next unless -f "$local_dir$entry";
+    next unless -f "$local_dir/$entry";
 
     push @on_linux, $entry;
 }
 
 closedir($dh);
+
 
 # find duplicates and delete them 
 # copy remaining from local to android podcast dir
