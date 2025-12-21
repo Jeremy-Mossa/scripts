@@ -40,7 +40,7 @@ if (@good_devices == 0) {
 }
 
 # get latest vids as audio podcasts to move to android
-system('./vids.sh') == 0
+system('/home/jbm/scripts/vids.sh') == 0
     or die "vids.sh failed or was interrupted\n";
 
 print "Found " . scalar(@good_devices) . " authorized device(s).\n\n";
@@ -77,6 +77,8 @@ while (my $file = readdir($dh_rename)) {
     $new =~ s/\.{3}//g;
     $new =~ s/\. \. \. //g;
     $new =~ s/ \. \. \. //g;
+    $new =~ s/\.\.\.opus/\.opus/g;
+    $new =~ s/\.\.opus/\.opus/g;
     $new =~ s/\.{2}/\./g;
     $new =~ s/ \/\///g;
     $new =~ s/ ⧸⧸//g;
