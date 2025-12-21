@@ -35,6 +35,7 @@ if (@good_devices == 0) {
         print "\nERROR: Device is unauthorized or offline.\n";
         print "Check your phone screen and accept the RSA key.\n";
     }
+    system("/bin/adb kill-server");
     exit 1;
 }
 
