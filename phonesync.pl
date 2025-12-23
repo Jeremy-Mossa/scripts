@@ -11,12 +11,18 @@ use Data::Dumper;
 $Data::Dumper::Terse = 1; # just dump data contents
 $Data::Dumper::Indent = 0; # single-line output
 
+# Exit if no internet access
+if (system("/bin/ping -c 2 8.8.8.8 > /dev/null 2>&1") != 0)
+{
+  print "not online.\n";
+  exit;
+}
+
 my $local_dir  = '/home/jbm/phone/';
 my $android_dir = '/storage/emulated/0/Podcasts/';
 
 my $adbstatus = `adb devices`;
 chomp($adbstatus);
-
 print "$adbstatus\n";
 
 # Get only the device lines (skip header)
