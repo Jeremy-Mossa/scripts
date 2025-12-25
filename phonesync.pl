@@ -25,12 +25,12 @@ my $adbstatus = `adb devices`;
 chomp($adbstatus);
 print "$adbstatus\n";
 
-# Get only the device lines (skip header)
+# get only the device lines (skip header)
 my @lines = split /\n/, $adbstatus;
 # has tab = real device line
 my @device_lines = grep { /\t/ } @lines;
 
-# Keep only authorized devices
+# keep only authorized devices
 my @good_devices = grep { /\tdevice$/ } @device_lines;
 
 if (@good_devices == 0) {
