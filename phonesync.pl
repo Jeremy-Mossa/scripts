@@ -90,6 +90,8 @@ while (my $file = readdir($dh_rename)) {
     $new =~ s/ ⧸⧸//g;
     $new =~ s/!!//g;
     $new =~ s/\s+(?=\.m)/ /g;
+    $new =~ s/([^.])mp4$/$1.mp4/i;
+    $new =~ s/([^.])opus$/$1.opus/i;
 
     if ($new ne $file) {
         rename("$local_dir/$file", "$local_dir/$new") or warn "Rename $local_dir/$file to $new failed: $!";
