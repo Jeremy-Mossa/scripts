@@ -14,12 +14,15 @@ my $ytdlp_script   = '/home/jbm/scripts/ytdlp.pl';
 my $clips_file     = File::Spec->catfile($home, 'Documents', 'clips.txt');
 
 # ----------------------------- INTERNET CHECK -----------------------------
-if (system('ping -c 2 8.8.8.8 > /dev/null 2>&1') != 0) {
-    warn "No internet connection — exiting.\n";
-    exit 1;
+while (1) {
+    if (system("/bin/ping -c 2 8.8.8.8 > /dev/null 2>&1") == 0) {
+        last;
+    }
+    sleep 60;
 }
 
 # ----------------------------- LOAD CHANNELS -----------------------------
+
 my @channels;
 
 if (-f $clips_file) {

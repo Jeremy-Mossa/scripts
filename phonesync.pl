@@ -57,44 +57,6 @@ foreach my $line (split /\n/, $audio_list) {
     $on_android{$line} = 1;
 }
 
-
-# rename garbled titles
-opendir(my $dh_rename, $local_dir) or die "Can't open $local_dir: $!";
-while (my $file = readdir($dh_rename)) {
-    next if $file =~ /^\./;  # Skip . and ..
-    next unless $file =~ /\.opus$/i;
-
-    my $new = $file;
-    $new =~ s/'s/s/g;
-    $new =~ s/\[[^]]*\]//g;
-    $new =~ s/ \./\./g;
-    $new =~ s/  +/ /g;  # collapse whitespaces 
-    $new =~ s/ - / /g;
-    $new =~ s/- / /g;
-    $new =~ s/ -/ /g;
-    $new =~ s/, / /g;
-    $new =~ s/[()]//g;
-    $new =~ s/： /_/g;
-    $new =~ s/ ｜ / /g;
-    $new =~ s/\.{3}//g;
-    $new =~ s/\. \. \. //g;
-    $new =~ s/ \. \. \. //g;
-    $new =~ s/\.\.\.opus/\.opus/g;
-    $new =~ s/\.\.opus/\.opus/g;
-    $new =~ s/\.{2}/\./g;
-    $new =~ s/ \/\///g;
-    $new =~ s/ ⧸⧸//g;
-    $new =~ s/!!//g;
-    $new =~ s/\s+(?=\.m)/ /g;
-    $new =~ s/([^.])mp4$/$1.mp4/i;
-    $new =~ s/([^.])opus$/$1.opus/i;
-
-    if ($new ne $file) {
-        rename("$local_dir/$file", "$local_dir/$new") or warn "Rename $local_dir/$file to $new failed: $!";
-    }
-}
-closedir($dh_rename);
-
 # list of .opus files in local_dir
 my @on_linux;
 opendir(my $dh, $local_dir)
