@@ -45,9 +45,8 @@ if (@good_devices == 0) {
     exit 1;
 }
 
-# get latest vids as audio podcasts to move to android
-system('/home/jbm/scripts/vids.sh') == 0
-    or die "vids.sh failed or was interrupted\n";
+system('/home/jbm/scripts/ytdlp.pl') == 0
+    or die "ytdlp.pl failed or was interrupted\n";
 
 print "Found " . scalar(@good_devices) . " authorized device(s).\n\n";
 # list audio files in 
