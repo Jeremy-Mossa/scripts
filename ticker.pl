@@ -4,13 +4,36 @@ use warnings;
 use 5.40.0;
 use utf8;
 use autodie;
-use LWP::UserAgent;
+use HTTP::Tiny;
 
 # Orange ANSI color code
 my $orange = "\e[38;5;208m";
 my $reset  = "\e[0m";
 
-my @tickers = qw(BITO MAIN GAIN HRZN PFLT FSK OXLC ECC);
+my @tickers = (
+    "BITO",
+    "MAIN",
+    "GAIN",
+    "HRZN",
+    "PFLT",
+    "OXLC",
+    "FSK",
+    "ECC"
+);
+
+my $cache_file = "/home/jbm/Documents/ticker_cache";
+
+# Load cache if exists
+my %cache;
+if (-f $cache_file) {
+    open my $fh, '<', $cache_file;
+    while (my $line = <$fh>) {
+        chomp $line;
+        my ($tick, $pr) = split /:/, $line;
+        $cache{$tick} = $pr if $tick && $pr;
+    }
+    close $fh;
+}
 
 # Find longest ticker for alignment
 my $max_length = 0;
@@ -21,39 +44,60 @@ for my $t (@tickers) {
 # Fixed width for price column ($xx.xx)
 my $price_width = 8;  # room for higher prices
 
+my $update_only = 0;
+if (@ARGV && $ARGV[0] eq '--update-only') {
+    $update_only = 1;
+}
+
+my $http = HTTP::Tiny->new;
+
+sub update_cache {
+    my %new_prices;
+    for my $ticker (@tickers) {
+        my $symbol = lc($ticker) . ".us";
+        my $url = "https://stooq.pl/q/?s=$symbol";
+
+        my $response = $http->get($url);
+
+        my $price = "";
+
+        if ($response->{success}) {
+            my $page = $response->{content};
+            if ($page =~ /id=aq_\Q$symbol\E_c4>(\d+\.\d+)/) {
+                $price = $1;
+            }
+        }
+
+        if ($price ne "") {
+            $new_prices{$ticker} = sprintf "%.2f", $price;
+        }
+    }
+
+    # Write updated cache
+    open my $fh, '>', $cache_file;
+    for my $tick (@tickers) {
+        my $pr = $new_prices{$tick} // $cache{$tick} // '(no price)';
+        print $fh "$tick:$pr\n";
+    }
+    close $fh;
+}
+
+if ($update_only) {
+    update_cache();
+    exit;
+}
+
+# Print from cache
 print $orange;  # Start orange color
 
-my $ua = LWP::UserAgent->new;
-$ua->agent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-
 for my $ticker (@tickers) {
-    my $symbol = lc($ticker) . ".us";
-    my $url    = "https://stooq.pl/q/?s=$symbol";
-
-    my $response = $ua->get($url);
-    my $page = "";
-    if ($response->is_success) {
-        $page = $response->content;
-    }
-
-    my $price = "";
-
-    # Match Kurs with optional $ and ** (e.g., **$14.2500** or $12.1300)
-    if ($page =~ /Kurs\s*\*?\*?\$?(\d+\.\d+)\*?\*?/) {
-        $price = $1;
-    }
-    # Fallback to Poprz. kurs (e.g., 58.9600)
-    elsif ($page =~ /Poprz\.\s*kurs\s*(\d+\.\d+)/) {
-        $price = $1;
-    }
-
+    my $price = $cache{$ticker} // "";
     if ($price eq "") {
         printf "\t%-*s: (no price)\n", $max_length, $ticker;
         next;
     }
 
-    my $formatted = sprintf "%.2f", $price;
-    my $price_part = "\$$formatted";
+    my $price_part = "\$$price";
 
     printf "\t%-*s: %*s\n",
         $max_length, $ticker,
@@ -61,3 +105,14 @@ for my $ticker (@tickers) {
 }
 
 print $reset;  # Reset color at end
+
+# Update in background
+if (my $pid = fork) {
+    # Parent
+} elsif (defined $pid) {
+    # Child
+    update_cache();
+    exit;
+} else {
+    warn "Fork failed: $!\n";
+}
