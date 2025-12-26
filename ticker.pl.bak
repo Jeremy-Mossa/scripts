@@ -4,7 +4,7 @@ use warnings;
 use 5.40.0;
 use utf8;
 use autodie;
-use Mojolicious::Lite;
+use HTTP::Tiny;
 
 # Orange ANSI color code
 my $orange = "\e[38;5;208m";
@@ -51,41 +51,29 @@ if (@ARGV && $ARGV[0] eq '--update-only') {
     $update_only = 1;
 }
 
-my $ua = Mojo::UserAgent->new;
-$ua->inactivity_timeout(10);
+my $http = HTTP::Tiny->new;
 
 sub update_cache {
     my %new_prices;
-
-    # build all requests in parallel
-    my $delay = Mojo::IOLoop->delay;
-
     for my $ticker (@tickers) {
         my $symbol = lc($ticker) . ".us";
-        my $url    = "https://stooq.pl/q/?s=$symbol";
+        my $url = "https://stooq.pl/q/?s=$symbol";
 
-        my $end = $delay->begin;
-        $ua->get($url => sub {
-            my ($ua, $tx) = @_;
-            my $price = "";
+        my $response = $http->get($url);
 
-            if ($tx->success) {
-                my $page = $tx->res->body;
-                if ($page =~ /id=aq_\Q$symbol\E_c4>(\d+\.\d+)/) {
-                    $price = $1;
-                }
+        my $price = "";
+
+        if ($response->{success}) {
+            my $page = $response->{content};
+            if ($page =~ /id=aq_\Q$symbol\E_c4>(\d+\.\d+)/) {
+                $price = $1;
             }
+        }
 
-            if ($price ne "") {
-                $new_prices{$ticker} = sprintf "%.2f", $price;
-            }
-
-            $end->();
-        });
+        if ($price ne "") {
+            $new_prices{$ticker} = sprintf "%.2f", $price;
+        }
     }
-
-    # Wait for all requests to finish
-    $delay->wait;
 
     # Write updated cache
     open my $fh, '>', $cache_file;

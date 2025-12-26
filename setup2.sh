@@ -66,6 +66,8 @@ perl-Gtk3
 perl-WWW-Curl
 perl-HTTP-Tiny
 perl-JSON-PP
+perl-Mojo-IOLoop-ReadWriteProcess
+perl-Mojolicious
 pkgconf-pkg-config
 prename
 python3-numpy
