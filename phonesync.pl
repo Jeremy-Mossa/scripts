@@ -7,9 +7,6 @@ use utf8;
 use autodie; # to handle errors
 use Data::Dumper;
 
-# make Data::Dumper pretty-print
-$Data::Dumper::Terse = 1; # just dump data contents
-$Data::Dumper::Indent = 0; # single-line output
 
 # Exit if no internet access
 if (system("/bin/ping -c 2 8.8.8.8 > /dev/null 2>&1") != 0)
