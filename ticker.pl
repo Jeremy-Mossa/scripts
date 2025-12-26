@@ -13,6 +13,7 @@ my $reset  = "\e[0m";
 my @tickers = (
     "DIVO",
     "BITO",
+    "YBTC",
     "SVOL",
     "JEPQ",
     "MAIN",
