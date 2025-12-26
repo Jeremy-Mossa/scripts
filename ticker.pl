@@ -53,20 +53,20 @@ if (@ARGV && $ARGV[0] eq '--update-only') {
 
 my $ua = Mojo::UserAgent->new;
 $ua->inactivity_timeout(10);
+$ua->max_connections(30);
+$ua->transactor->name('Mozilla/5.0');
 
 sub update_cache {
     my %new_prices;
 
-    # build all requests in parallel
-    my $delay = Mojo::IOLoop->delay;
+    my @promises;
 
     for my $ticker (@tickers) {
         my $symbol = lc($ticker) . ".us";
         my $url    = "https://stooq.pl/q/?s=$symbol";
 
-        my $end = $delay->begin;
-        $ua->get($url => sub {
-            my ($ua, $tx) = @_;
+        my $p = $ua->get_p($url)->then(sub {
+            my ($tx) = @_;
             my $price = "";
 
             if ($tx->success) {
@@ -79,15 +79,17 @@ sub update_cache {
             if ($price ne "") {
                 $new_prices{$ticker} = sprintf "%.2f", $price;
             }
-
-            $end->();
+        })->catch(sub {
+            warn "Failed to fetch $ticker: @_\n" if 0;  # set to 1 for debug
         });
+
+        push @promises, $p;
     }
 
-    # Wait for all requests to finish
-    $delay->wait;
+    # block until all requests are done
+    Mojo::Promise->all(@promises)->wait;
 
-    # Write updated cache
+    # write updated cache
     open my $fh, '>', $cache_file;
     for my $tick (@tickers) {
         my $pr = $new_prices{$tick} // $cache{$tick} // '(no price)';
@@ -101,8 +103,8 @@ if ($update_only) {
     exit;
 }
 
-# Print from cache
-print $orange;  # Start orange color
+# print from cache
+print $orange;  # start orange color
 
 for my $ticker (@tickers) {
     my $price = $cache{$ticker} // "";
@@ -118,7 +120,7 @@ for my $ticker (@tickers) {
         $price_width, $price_part;
 }
 
-print $reset;  # Reset color at end
+print $reset;  # reset color at end
 
 # Update in background
 if (my $pid = fork) {
