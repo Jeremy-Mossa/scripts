@@ -6,6 +6,8 @@ use 5.40.0; # version of perl
 use utf8;
 use autodie; # to handle errors
 use File::Spec;
+use lib "$ENV{HOME}/scripts/lib";
+use Renamer qw(clean_filenames);
 
 # ----------------------------- CONFIGURATION -----------------------------
 my $home           = $ENV{HOME} // die "HOME not set\n";
@@ -52,3 +54,4 @@ for my $channel (@channels) {
     system($^X, $ytdlp_script, $channel) == 0
         or die "ytdlp.pl failed for $channel (exit code $?)\n";
 }
+clean_filenames();

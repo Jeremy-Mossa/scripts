@@ -8,7 +8,8 @@ use utf8;
 use autodie;
 use File::Basename;
 use File::Spec;
-require "$ENV{HOME}/scripts/lib/clean_filenames.pl";
+use lib "$ENV{HOME}/scripts/lib";
+use Renamer qw(clean_filenames);
 
 
 # ----------------------------- CONFIGURATION -----------------------------
