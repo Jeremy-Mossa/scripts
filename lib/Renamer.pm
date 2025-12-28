@@ -1,4 +1,4 @@
-package renamer;
+package Renamer;
 
 use strict;
 use warnings;
