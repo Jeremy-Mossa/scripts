@@ -6,6 +6,9 @@ use utf8;
 use autodie qw(:all);
 use File::Spec;
 use File::Path qw(make_path);
+use lib "$ENV{HOME}/scripts/lib";
+use Renamer qw(clean_filenames);
+
 
 # ----------------------------- CONFIGURATION -----------------------------
 my $home   = $ENV{HOME} // die "HOME not set\n";
@@ -49,7 +52,9 @@ if (fork() == 0) {                 # child process
     POSIX::setsid() or die "setsid failed: $!\n";
     open STDOUT, '>', '/dev/null' or die "Can't redirect STDOUT: $!\n";
     open STDERR, '>', '/dev/null' or die "Can't redirect STDERR: $!\n";
-    exec @cmd or die "Failed to exec yt-dlp: $!\n";
+    system(@cmd) == 0 or exit 1;
+    clean_filenames($yt_dir);
+
+    exit 0;
 }
-# parent process exits immediately (script returns, download continues in background)
 exit 0;
