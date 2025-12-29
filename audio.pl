@@ -76,7 +76,7 @@ sub clean_filenames() {
         $new_name =~ s/\s+(?=\.m)/ /g;
         $new_name =~ s/([^.])opus$/$1.opus/i;
         $new_name =~ s/([^.])mp4$/$1.mp4/i;
-        $new_name =~ s/^\s+|\s+$//g;            # trim
+        $new_name =~ s/^\s+|\s+$//g;
 
         if ( $new_name ne $file ) {
             rename( "$current_dir/$file", "$current_dir/$new_name" )
