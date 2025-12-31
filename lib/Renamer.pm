@@ -18,6 +18,7 @@ sub clean_filenames {
         my $new_name = $file;
         $new_name =~ s/'s/s/g;
         $new_name =~ s/\[[^]]*\]//g;
+        $new_name =~ s/ \.opus/\.opus/g;
         $new_name =~ s/ \./\./g;
         $new_name =~ s/ +/ /g;
         $new_name =~ s/ - / /g;
@@ -28,9 +29,12 @@ sub clean_filenames {
         $new_name =~ s/： /_/g;
         $new_name =~ s/ ｜ / /g;
         $new_name =~ s/\.{3}//g;
+        $new_name =~ s/\. \. \. opus/\.opus/g;
+        $new_name =~ s/ \. \. \. opus/\.opus/g;
         $new_name =~ s/\. \. \. //g;
         $new_name =~ s/ \. \. \. //g;
         $new_name =~ s/\.\.\.opus/\.opus/g;
+        $new_name =~ s/ \.\.opus/\.opus/g;
         $new_name =~ s/\.\.opus/\.opus/g;
         $new_name =~ s/\.{2}/\./g;
         $new_name =~ s/ \/\///g;
