@@ -80,6 +80,7 @@ qmake
 rclone
 redshift
 rtorrent
+scrcpy
 SDL2-devel
 slim
 source-foundry-hack-fonts
@@ -132,6 +133,8 @@ libavcodec-freeworld
 polybar
 rofi
 "
+
+dnf copr enable zeno/scrcpy
 
 dnf install -y \
   https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
