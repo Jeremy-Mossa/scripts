@@ -63,6 +63,7 @@ net-tools
 ninja-build
 perl-doc
 perl-Gtk3
+perl-Inline-C
 perl-WWW-Curl
 perl-HTTP-Tiny
 perl-JSON-PP
