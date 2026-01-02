@@ -72,6 +72,7 @@ perl-Mojo-IOLoop-ReadWriteProcess
 perl-Mojolicious
 pkgconf-pkg-config
 prename
+pulseaudio-utils
 python3-numpy
 python3-opencv
 qalculate-qt
