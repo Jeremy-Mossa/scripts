@@ -64,6 +64,7 @@ ninja-build
 perl-doc
 perl-Gtk3
 perl-Inline-C
+perl-PDL
 perl-WWW-Curl
 perl-HTTP-Tiny
 perl-JSON-PP
