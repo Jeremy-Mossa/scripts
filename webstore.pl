@@ -58,52 +58,58 @@ my $password = <$password_fh>;
 chomp($password) if defined $password;
 close($password_fh);
 
-my $temp_profile = tempdir(CLEANUP => 1);
-my $browser_bin = "/bin/firefox";
+system('/bin/icecat >/dev/null 2>&1 &');
+my $cmd = 'xdotool search --onlyvisible IceCat >/dev/null 2>&1';
+while (system($cmd) != 0) {
+  sleep 0.001;
+}
+
 my $url = "https://store.playcontestofchampions.com";
-my $cmd = "$browser_bin --no-remote " .
-          "--profile \"$temp_profile\" " .
-          "--private-window \"$url\" " .
-          ">/dev/null 2>&1 &";
-system($cmd) == 0 or die "Failed to execute firefox: $?";
+system("xdotool type --delay 0 $url");
+system('xdotool key Enter');
+system("scrot ~/downloads/webstore.png");
 
 sleep 7;
 
-# Find and position the Firefox window
-my $window_id = `xdotool search --onlyvisible --name "Mozilla"`;
+# Find and position the browser window
+my $window_id = `xdotool search --onlyvisible --name "IceCat"`;
 chomp($window_id);
 if ($window_id) {
     system("xdotool windowmove $window_id 0 0");
     system("xdotool windowsize $window_id 1900 1060");
 } else {
-    warn "Could not find Firefox window $window_id. Screenshot may fail.\n";
+    warn "Could not find browser window $window_id.\n";
 }
 
 sleep 3;
+system("scrot ~/downloads/webstore.png");
 
-system('xdotool mousemove 1690 105');
+system('xdotool mousemove 1680 143');
 system('xdotool click 1');
 sleep 0.5;
 system('xdotool click 1');
 sleep 10;
-system('xdotool mousemove 940 582');
+system("scrot ~/downloads/webstore.png");
+system('xdotool mousemove 933 611');
 system('xdotool click 1');
 sleep 0.5;
 system('xdotool click 1');
 sleep 12;
-system('xdotool mousemove 940 555');
+system("scrot ~/downloads/webstore.png");
+system('xdotool mousemove 940 595');
 system('xdotool click 1');
 sleep 10;
 system("xdotool type '$username'");
-system('xdotool mousemove 940 627');
+system("scrot ~/downloads/webstore.png");
+system('xdotool mousemove 940 667');
 system('xdotool click 1');
 sleep 0.25;
 system("xdotool type '$password'");
-system('xdotool mousemove 940 747');
+system("scrot ~/downloads/webstore.png");
+system('xdotool mousemove 940 787');
 system('xdotool click 1');
 sleep 10;
 system("xdotool key Ctrl+Shift+k");
-# system("scrot /downloads/webstore.png");
 
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
 
@@ -115,6 +121,7 @@ foreach my $char (split //, $command) {
 }
 system("xdotool key Return");
 sleep 5;
+system("scrot ~/downloads/webstore.png");
 
 # system("scrot /downloads/webstore.png");
 
