@@ -18,8 +18,8 @@ while (1) {
 print "Connected\n";
 
 # Check if Xvfb is running, start if not
-system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1200x24 >/dev/null 2>&1 &");
-sleep 5;
+#system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1200x24 >/dev/null 2>&1 &");
+#sleep 5;
 
 # my $resolution = "1920x1200";
 # my $output_file = "~/Downloads/webstore_recording.mp4";
@@ -42,7 +42,7 @@ sleep 5;
 # }
 
 # Set DISPLAY environment variable
-$ENV{DISPLAY} = ":99";
+#$ENV{DISPLAY} = ":99";
 
 my $username_file = "$ENV{HOME}/.ssh/mcoc_username";
 open(my $username_fh, '<', $username_file) 
@@ -58,13 +58,17 @@ my $password = <$password_fh>;
 chomp($password) if defined $password;
 close($password_fh);
 
-system('/bin/icecat >/dev/null 2>&1 &');
-my $cmd = 'xdotool search --onlyvisible IceCat >/dev/null 2>&1';
+my $url = "https://store.playcontestofchampions.com";
+my $firefox = '/bin/firefox'
+  . ' --private-window'
+  . " $url"
+  . ' >/dev/null 2>&1 &';
+system("$firefox");
+my $cmd = 'xdotool search --onlyvisible Mozilla >/dev/null 2>&1';
 while (system($cmd) != 0) {
   sleep 0.001;
 }
 
-my $url = "https://store.playcontestofchampions.com";
 system("xdotool type --delay 0 $url");
 system('xdotool key Enter');
 system("scrot ~/downloads/webstore.png");
@@ -72,7 +76,7 @@ system("scrot ~/downloads/webstore.png");
 sleep 7;
 
 # Find and position the browser window
-my $window_id = `xdotool search --onlyvisible --name "IceCat"`;
+my $window_id = `xdotool search --onlyvisible --name "Mozilla"`;
 chomp($window_id);
 if ($window_id) {
     system("xdotool windowmove $window_id 0 0");
@@ -84,31 +88,30 @@ if ($window_id) {
 sleep 3;
 system("scrot ~/downloads/webstore.png");
 
-system('xdotool mousemove 1680 143');
+system('xdotool mousemove 1680 183');
+sleep 0.5;
 system('xdotool click 1');
 sleep 0.5;
 system('xdotool click 1');
-sleep 10;
-system("scrot ~/downloads/webstore.png");
-system('xdotool mousemove 933 611');
-system('xdotool click 1');
-sleep 0.5;
-system('xdotool click 1');
-sleep 12;
-system("scrot ~/downloads/webstore.png");
-system('xdotool mousemove 940 595');
-system('xdotool click 1');
-sleep 10;
-system("xdotool type '$username'");
+sleep 4;
 system("scrot ~/downloads/webstore.png");
 system('xdotool mousemove 940 667');
 system('xdotool click 1');
+sleep 0.5;
+system('xdotool click 1');
+sleep 5;
+system("scrot ~/downloads/webstore.png");
+system('xdotool mousemove 940 549');
+system('xdotool click 1');
+sleep 3;
+system("xdotool type '$username'");
+system("scrot ~/downloads/webstore.png");
+system("xdotool type Tab");
 sleep 0.25;
 system("xdotool type '$password'");
+system("xdotool type Enter");
 system("scrot ~/downloads/webstore.png");
-system('xdotool mousemove 940 787');
-system('xdotool click 1');
-sleep 10;
+sleep 5;
 system("xdotool key Ctrl+Shift+k");
 
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
@@ -130,4 +133,4 @@ system("scrot ~/downloads/webstore.png");
 # waitpid($ffmpeg_pid, 0);
 
 # Kill Xvfb
-system("pkill Xvfb");
+#system("pkill Xvfb");
