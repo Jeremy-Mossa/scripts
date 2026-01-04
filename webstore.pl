@@ -72,7 +72,8 @@ while (system($cmd) != 0) {
 sleep 7;
 
 # Find and position the browser window
-my $window_id = `xdotool search --onlyvisible --name "Mozilla" | tail -n1`;
+my $window_id = `xdotool search --onlyvisible 
+                 --name "Mozilla" | tail -n1`;
 chomp($window_id);
 print "$window_id\n";
 if ($window_id) {
@@ -84,18 +85,18 @@ if ($window_id) {
 
 sleep 10;
 
-system('xdotool mousemove 1680 183');
+system('xdotool mousemove 1067 116');
 sleep 0.5;
 system('xdotool click 1');
 sleep 0.5;
 system('xdotool click 1');
 sleep 7;
-system('xdotool mousemove 940 667');
+system('xdotool mousemove 635 470');
 system('xdotool click 1');
 sleep 0.5;
 system('xdotool click 1');
 sleep 7;
-system('xdotool mousemove 940 641');
+system('xdotool mousemove 644 570');
 system('xdotool click 1');
 sleep 7;
 system("xdotool type '$username'");
@@ -124,4 +125,4 @@ sleep 5;
 # waitpid($ffmpeg_pid, 0);
 
 # Kill Xvfb
-system("pkill Xvfb");
+# system("pkill Xvfb");
