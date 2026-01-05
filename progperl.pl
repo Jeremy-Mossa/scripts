@@ -28,7 +28,8 @@ elsif ($file_name =~ /^\s*$/) {
 }
 elsif ($file_name !~ /^[a-zA-Z0-9_-]+$/) {
     # 'file.pl' throws error. user must provide 'file' only
-    die "Error: File name contains invalid characters.\n";
+    die "Error: File name contains invalid characters. \n"
+         . "Characters allowed: \'a-z A-Z 0-9 _ -\'\n";
 }
 
 # append .pl suffix
