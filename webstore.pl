@@ -66,16 +66,12 @@ my $firefox = '/bin/firefox'
 system("$firefox");
 my $cmd = 'xdotool search --onlyvisible Mozilla >/dev/null 2>&1';
 while (system($cmd) != 0) {
-  sleep 0.001;
+  sleep 0.01;
 }
 
-sleep 10;
-
-system('xdotool mousemove 1067 116');
+system("xdotool key Tab");
+system("xdotool key Enter");
 sleep 0.5;
-system('xdotool click 1');
-sleep 0.5;
-system('xdotool click 1');
 sleep 7;
 system('xdotool mousemove 635 470');
 system('xdotool click 1');
