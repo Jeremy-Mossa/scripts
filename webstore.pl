@@ -70,6 +70,7 @@ while (system($cmd) != 0) {
   sleep 0.01;
 }
 
+
 my $login = 'document.querySelector(\'[data-testid="login-form__primary-social"] button.primary-social__kabam\')?.click()';
 sleep 5;
 system("xdotool key Tab");

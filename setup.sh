@@ -66,6 +66,26 @@ cp ~/Storage/wallpapers/* ~/wallpapers/
 
 
 ###############################################################
+
+#----------------------- Geckodriver for firefox -----------------------
+
+cd ~/Downloads || exit 1
+
+# Download the latest geckodriver (v0.36.0 as of January 2026)
+wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
+
+tar -xzf geckodriver-v0.36.0-linux64.tar.gz
+mkdir -p ~/.local/bin
+mv geckodriver ~/.local/bin/
+chmod +x ~/.local/bin/geckodriver
+rm geckodriver-v0.36.0-linux64.tar.gz
+
+# Verify installation
+geckodriver --version
+
+cd ~/
+
+#-----------------------------------------------------------------------
 # Fluxbox dock -- different time format
 INIT_FILE="$HOME/.fluxbox/init"
 CLOCK_FORMAT="session.screen0.strftimeFormat: %A -- %e %B %Y -- %H:%M"

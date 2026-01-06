@@ -61,6 +61,7 @@ mupdf
 mutt
 net-tools
 ninja-build
+perl-App-cpanminus
 perl-doc
 perl-Gtk3
 perl-Inline-C
@@ -147,6 +148,9 @@ for package in $PKG; do
     yes | dnf install "$package"
   fi
 done
+
+# install selenium for perl
+cpanm Selenium::Remote::Driver
 
 # ensure .mkv are playable
 dnf swap -y ffmpeg-free ffmpeg --allowerasing
