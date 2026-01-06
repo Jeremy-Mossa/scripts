@@ -69,20 +69,6 @@ while (system($cmd) != 0) {
   sleep 0.001;
 }
 
-sleep 7;
-
-# Find and position the browser window
-my $window_id = `xdotool search --onlyvisible 
-                 --name "Mozilla" | tail -n1`;
-chomp($window_id);
-print "$window_id\n";
-if ($window_id) {
-    system("xdotool windowmove $window_id 0 0");
-    system("xdotool windowsize $window_id 1900 1060");
-} else {
-    warn "Could not find browser window $window_id.\n";
-}
-
 sleep 10;
 
 system('xdotool mousemove 1067 116');
