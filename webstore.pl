@@ -1,8 +1,6 @@
 #!/usr/bin/env perl
 
-use 5.40.0;
-use strict;
-use warnings;
+use 5.42.0;
 use autodie;
 use File::Temp qw(tempdir);
 
@@ -21,25 +19,25 @@ print "Connected\n";
 system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1200x24 >/dev/null 2>&1 &");
 sleep 5;
 
-# my $resolution = "1920x1200";
-# my $output_file = "~/Downloads/webstore_recording.mp4";
-# my $ffmpeg_pid = fork();
-# if (!$ffmpeg_pid) {
-#     # Child process: run ffmpeg
-#     exec(
-#       "ffmpeg -y " .
-#       "-f x11grab " .
-#       "-video_size $resolution " .
-#       "-framerate 30 " .
-#       "-i :99 " .
-#       "-c:v libx264 " .
-#       "-preset fast " .
-#       "-crf 23 " .
-#       "-pix_fmt yuv420p " .
-#       "$output_file"
-#     );
-#     exit;  # In case exec fails
-# }
+my $resolution = "1920x1200";
+my $output_file = "~/Downloads/webstore_recording.mp4";
+my $ffmpeg_pid = fork();
+if (!$ffmpeg_pid) {
+    # Child process: run ffmpeg
+    exec(
+      "ffmpeg -y " .
+      "-f x11grab " .
+      "-video_size $resolution " .
+      "-framerate 30 " .
+      "-i :99 " .
+      "-c:v libx264 " .
+      "-preset fast " .
+      "-crf 23 " .
+      "-pix_fmt yuv420p " .
+      "$output_file"
+    );
+    exit;  # In case exec fails
+}
 
 # Set DISPLAY environment variable
 $ENV{DISPLAY} = ":99";
@@ -58,33 +56,27 @@ my $password = <$password_fh>;
 chomp($password) if defined $password;
 close($password_fh);
 
-my $url = "https://store.playcontestofchampions.com";
+my $url = "https://api.production.auth.pubsdk"
+          . ".kabam.dev/v1/kid/account/login";
 my $firefox = '/bin/firefox'
   . ' --private-window'
+  . ' --new-instance'
   . " $url"
   . ' >/dev/null 2>&1 &';
 system("$firefox");
-my $cmd = 'xdotool search --onlyvisible Mozilla >/dev/null 2>&1';
+my $cmd = 'xdotool search --onlyvisible "Account Login" '
+          . '>/dev/null 2>&1';
 while (system($cmd) != 0) {
   sleep 0.01;
 }
-
+sleep 5;
 system("xdotool key Tab");
-system("xdotool key Enter");
-sleep 0.5;
-sleep 7;
-system('xdotool mousemove 635 470');
-system('xdotool click 1');
-sleep 0.5;
-system('xdotool click 1');
-sleep 7;
-system('xdotool mousemove 644 570');
-system('xdotool click 1');
-sleep 7;
 system("xdotool type '$username'");
 system("xdotool key Tab");
 sleep 0.25;
 system("xdotool type '$password'");
+system("xdotool key Tab");
+system("xdotool key Tab");
 system("xdotool key Enter");
 sleep 7;
 system("xdotool key Ctrl+Shift+k");
@@ -103,8 +95,8 @@ sleep 5;
 
 
 # Stop ffmpeg (send SIGINT to finish clean)
-# kill 'INT', $ffmpeg_pid;
-# waitpid($ffmpeg_pid, 0);
+kill 'INT', $ffmpeg_pid;
+waitpid($ffmpeg_pid, 0);
 
 # Kill Xvfb
-# system("pkill Xvfb");
+system("pkill Xvfb");
