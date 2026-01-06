@@ -69,6 +69,8 @@ my $cmd = 'xdotool search --onlyvisible "Account Login" '
 while (system($cmd) != 0) {
   sleep 0.01;
 }
+
+my $login = 'document.querySelector(\'[data-testid="login-form__primary-social"] button.primary-social__kabam\')?.click()';
 sleep 5;
 system("xdotool key Tab");
 system("xdotool type '$username'");
@@ -76,7 +78,9 @@ system("xdotool key Tab");
 sleep 0.25;
 system("xdotool type '$password'");
 system("xdotool key Tab");
+sleep 0.25;
 system("xdotool key Tab");
+sleep 0.25;
 system("xdotool key Enter");
 sleep 7;
 system("xdotool key Ctrl+Shift+k");
