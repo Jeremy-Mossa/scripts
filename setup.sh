@@ -74,7 +74,7 @@ cd ~/Downloads || exit 1
 # dl  latest geckodriver (v0.36.0 as of Jan 2026)
 url1='https://github.com/mozilla/geckodriver/releases/download/'
 url2='v0.36.0/geckodriver-v0.36.0-linux64.tar.gz'
-wget https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
+wget $url1$url2
 
 tar -xzf geckodriver-v0.36.0-linux64.tar.gz
 mkdir -p ~/.local/bin
@@ -82,7 +82,7 @@ mv geckodriver ~/.local/bin/
 chmod +x ~/.local/bin/geckodriver
 rm geckodriver-v0.36.0-linux64.tar.gz
 
-# Verify installation
+# verify install
 geckodriver --version
 
 cd ~/
