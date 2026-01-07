@@ -64,21 +64,26 @@ my $firefox = '/bin/firefox'
   . ' >/dev/null 2>&1 &';
 system("$firefox");
 
-sleep 10;
+sleep 15;
 
 system("xdotool key Ctrl+Shift+k");
 sleep 7;
 my $login = 'document.querySelector(\'.login-button\').click()';
 foreach my $char (split //, $login) {
-    system("xdotool type '$char'");
-    system("sleep 0.03");
+    if ($char eq "'") {
+        system("xdotool key apostrophe");
+        system("sleep 0.03");
+    } else {
+        system("xdotool type '$char'");
+        system("sleep 0.03");
+    }
 }
 system("xdotool key Return");
 undef $login;
 
-sleep 7;
+sleep 3;
 
-system("xdotool mousemove 910 400 click 1");
+system("xdotool mousemove 910 395 click 1");
 sleep 5;
 system("xdotool key Tab");
 system("xdotool type '$username'");
@@ -90,15 +95,24 @@ sleep 0.25;
 system("xdotool key Tab");
 sleep 0.25;
 system("xdotool key Enter");
-sleep 7;
+sleep 12;
+system("xdotool mousemove 300 1065 click 1");
 
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
 
 sleep 1;
 
 foreach my $char (split //, $command) {
-    system("xdotool type '$char'");
-    system("sleep 0.03");
+    if ($char eq '"') {
+        system("xdotool key quotedbl");
+        system("sleep 0.03");
+    } elsif ($char eq "'") {
+        system("xdotool key apostrophe");
+        system("sleep 0.03");
+    } else {
+        system("xdotool type '$char'");
+        system("sleep 0.03");
+    }
 }
 system("xdotool key Return");
 sleep 5;
