@@ -19,25 +19,25 @@ print "Connected\n";
 system("pidof Xvfb || Xvfb :99 -ac -screen 0 1920x1200x24 >/dev/null 2>&1 &");
 sleep 5;
 
-my $resolution = "1920x1200";
-my $output_file = "~/Downloads/webstore_recording.mp4";
-my $ffmpeg_pid = fork();
-if (!$ffmpeg_pid) {
-    # Child process: run ffmpeg
-    exec(
-      "ffmpeg -y " .
-      "-f x11grab " .
-      "-video_size $resolution " .
-      "-framerate 30 " .
-      "-i :99 " .
-      "-c:v libx264 " .
-      "-preset fast " .
-      "-crf 23 " .
-      "-pix_fmt yuv420p " .
-      "$output_file"
-    );
-    exit;  # In case exec fails
-}
+# my $resolution = "1920x1200";
+# my $output_file = "~/Downloads/webstore_recording.mp4";
+# my $ffmpeg_pid = fork();
+# if (!$ffmpeg_pid) {
+#     # Child process: run ffmpeg
+#     exec(
+#       "ffmpeg -y " .
+#       "-f x11grab " .
+#       "-video_size $resolution " .
+#       "-framerate 30 " .
+#       "-i :99 " .
+#       "-c:v libx264 " .
+#       "-preset fast " .
+#       "-crf 23 " .
+#       "-pix_fmt yuv420p " .
+#       "$output_file"
+#     );
+#     exit;  # In case exec fails
+# }
 
 # Set DISPLAY environment variable
 $ENV{DISPLAY} = ":99";
@@ -84,7 +84,7 @@ undef $login;
 sleep 3;
 
 system("xdotool mousemove 910 395 click 1");
-sleep 5;
+sleep 12;
 system("xdotool key Tab");
 system("xdotool type '$username'");
 system("xdotool key Tab");
@@ -120,8 +120,8 @@ sleep 5;
 
 
 # Stop ffmpeg (send SIGINT to finish clean)
-kill 'INT', $ffmpeg_pid;
-waitpid($ffmpeg_pid, 0);
+# kill 'INT', $ffmpeg_pid;
+# waitpid($ffmpeg_pid, 0);
 
 # Kill Xvfb
 system("pkill Xvfb");
