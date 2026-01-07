@@ -67,24 +67,18 @@ system("$firefox");
 sleep 10;
 
 system("xdotool key Ctrl+Shift+k");
+sleep 7;
 my $login = 'document.querySelector(\'.login-button\').click()';
 foreach my $char (split //, $login) {
     system("xdotool type '$char'");
     system("sleep 0.03");
 }
-undef $char;
+system("xdotool key Return");
 undef $login;
 
-sleep 2;
+sleep 7;
 
-my $login2 = 'document.querySelector(\'[data-testid="login-form__primary-social"] button.primary-social__kabam\')?.click()';
-foreach my $char (split //, $login2) {
-    system("xdotool type '$char'");
-    system("sleep 0.03");
-}
-undef $char;
-undef $login2;
-
+system("xdotool mousemove 910 400 click 1");
 sleep 5;
 system("xdotool key Tab");
 system("xdotool type '$username'");
