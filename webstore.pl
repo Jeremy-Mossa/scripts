@@ -56,22 +56,35 @@ my $password = <$password_fh>;
 chomp($password) if defined $password;
 close($password_fh);
 
-my $url = "https://api.production.auth.pubsdk"
-          . ".kabam.dev/v1/kid/account/login";
+my $url = "https://store.playcontestofchampions.com";
 my $firefox = '/bin/firefox'
   . ' --private-window'
   . ' --new-instance'
   . " $url"
   . ' >/dev/null 2>&1 &';
 system("$firefox");
-my $cmd = 'xdotool search --onlyvisible "Account Login" '
-          . '>/dev/null 2>&1';
-while (system($cmd) != 0) {
-  sleep 0.01;
+
+sleep 10;
+
+system("xdotool key Ctrl+Shift+k");
+my $login = 'document.querySelector(\'.login-button\').click()';
+foreach my $char (split //, $login) {
+    system("xdotool type '$char'");
+    system("sleep 0.03");
 }
+undef $char;
+undef $login;
 
+sleep 2;
 
-my $login = 'document.querySelector(\'[data-testid="login-form__primary-social"] button.primary-social__kabam\')?.click()';
+my $login2 = 'document.querySelector(\'[data-testid="login-form__primary-social"] button.primary-social__kabam\')?.click()';
+foreach my $char (split //, $login2) {
+    system("xdotool type '$char'");
+    system("sleep 0.03");
+}
+undef $char;
+undef $login2;
+
 sleep 5;
 system("xdotool key Tab");
 system("xdotool type '$username'");
@@ -84,7 +97,6 @@ system("xdotool key Tab");
 sleep 0.25;
 system("xdotool key Enter");
 sleep 7;
-system("xdotool key Ctrl+Shift+k");
 
 my $command = 'document.querySelectorAll("span[data-testid=\'get-free\']").forEach(el => el.click());';
 
