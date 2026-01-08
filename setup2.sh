@@ -69,6 +69,7 @@ perl-PDL
 perl-WWW-Curl
 perl-HTTP-Tiny
 perl-JSON-PP
+perl-WWW-Mechanize
 perl-Mojo-IOLoop-ReadWriteProcess
 perl-Mojolicious
 pkgconf-pkg-config
