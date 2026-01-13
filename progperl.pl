@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-use warnings;
 use strict;
+use warnings;
 use v5.40;
 use utf8;
 use autodie;
@@ -49,6 +49,8 @@ print $fh <<'EOF';
 
 use 5.42.0; # version of perl
 use utf8;
+use strict;
+use warnings;
 use autodie; # to handle errors
 use Data::Dumper;
 
