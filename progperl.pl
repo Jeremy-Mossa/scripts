@@ -52,11 +52,6 @@ use utf8;
 use strict;
 use warnings;
 use autodie; # to handle errors
-use Data::Dumper;
-
-# make Data::Dumper pretty-print
-$Data::Dumper::Terse = 1; # just dump data contents
-$Data::Dumper::Indent = 0; # single-line output
 
 
 EOF
@@ -64,3 +59,10 @@ close($fh);
 
 # make file_name.pl executable
 chmod(0755, $file_name);
+
+# add to heredoc when needed
+# use Data::Dumper;
+# 
+# # make Data::Dumper pretty-print
+# $Data::Dumper::Terse = 1; # just dump data contents
+# $Data::Dumper::Indent = 0; # single-line output

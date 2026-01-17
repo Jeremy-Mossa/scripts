@@ -53,5 +53,5 @@ chdir $yt_dir
 for my $channel (@channels) {
     system($^X, $ytdlp_script, $channel) == 0
         or die "ytdlp.pl failed for $channel (exit code $?)\n";
+    clean_filenames();
 }
-clean_filenames();
