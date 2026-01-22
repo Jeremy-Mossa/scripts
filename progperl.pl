@@ -51,7 +51,7 @@ use 5.42.0; # version of perl
 use utf8;
 use strict;
 use warnings;
-use autodie; # to handle errors
+use Carp qw/croak/; # to handle errors
 
 
 EOF
