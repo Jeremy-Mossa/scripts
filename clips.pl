@@ -50,6 +50,7 @@ if (not @channels) {
 chdir $yt_dir
   or die "failed to chdir into $yt_dir";
 
+clean_filenames();
 for my $channel (@channels) {
     system($^X, $ytdlp_script, $channel) == 0
         or die "ytdlp.pl failed for $channel (exit code $?)\n";
