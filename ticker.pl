@@ -2,7 +2,7 @@
 
 use 5.42.0; # version of perl
 use utf8;
-use autodie; # to handle errors
+use Carp qw/croak/;
 use Mojo::DOM;
 use Mojo::File;  # For reading files easily
 
@@ -36,14 +36,11 @@ my $url = 'https://stooq.com/q/?s=';
 my @tickers = (
   'bito',
   'divo',
-  'dx',
   'gain',
-  'hrzn',
   'jepq',
   'main',
   'oxlc',
   'pflt',
-  'svol'
 );
 
 #-----------------------------------------------------------------------
@@ -63,7 +60,9 @@ sub cache_prices($ticker) {
   # Parse the HTML
   my $dom   = Mojo::DOM->new($html);
   my $price = $dom->at('span#aq_' . $ticker . '\.us_c4');
+  say "$price";
   $price    = $price->text;
+  say "$price";
   
   # truncate fractional pennies, left-pad price
   $price = sprintf("%.2f", $price);
@@ -76,7 +75,7 @@ sub cache_prices($ticker) {
       $cache .= "$ticker: " . $price . "\n";
   }
   else {
-      die "no price found for $ticker";
+      croak "no price found for $ticker";
   }
   
 }
@@ -87,11 +86,11 @@ sub update_cache() {
   }
 
   open(my $fh_writer, '>', $cache_file)
-    or die "Can't open $cache_file $!";
+    or croak "Can't open $cache_file $!";
 
   # error handling here ensures data is immediately flushed
   print $fh_writer $cache
-    or die "Can't write to $cache_file: $!";
+    or croak "Can't write to $cache_file: $!";
 
   close $fh_writer
 }
@@ -99,7 +98,7 @@ sub update_cache() {
 sub print_cache() {
 
   open(my $fh_reader, '<', $cache_file) 
-    or die "Can't open $cache_file $!";
+    or croak "Can't open $cache_file $!";
 
   print $orange;  # start orange color
   while (my $line = <$fh_reader>) {  # Angle brackets read a line
