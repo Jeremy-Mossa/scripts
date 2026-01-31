@@ -308,3 +308,19 @@ dnf remove -y gnome-shell gnome-* gdm \
 if rpm -q gnome-shell >/dev/null; then
   rpm -e --nodeps gnome-shell
 fi
+
+
+#----------------------- Exclude gnome from dnf ------------------------
+
+CONF_FILE="/etc/dnf/dnf.conf"
+if [ ! -f "$CONF_FILE" ]; then
+    sudo touch "$CONF_FILE"
+fi
+if ! grep -q '^\[main\]' "$CONF_FILE"; then
+    echo "[main]" | sudo tee -a "$CONF_FILE" > /dev/null
+fi
+if ! grep -q "exclude=gnome\*" "$CONF_FILE"; then
+    echo "exclude=gnome*" | sudo tee -a "$CONF_FILE" > /dev/null
+fi
+
+#-----------------------------------------------------------------------
