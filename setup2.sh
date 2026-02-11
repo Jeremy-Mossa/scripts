@@ -134,6 +134,7 @@ thunderbird
 libavcodec-freeworld
 polybar
 rofi
+djview4
 "
 
 dnf copr enable zeno/scrcpy
