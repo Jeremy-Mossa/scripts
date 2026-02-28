@@ -135,6 +135,7 @@ libavcodec-freeworld
 polybar
 rofi
 djview4
+xinput
 "
 
 dnf copr enable zeno/scrcpy
