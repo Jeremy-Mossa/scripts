@@ -52,7 +52,6 @@ print $fh <<'EOF';
 use 5.42.0; # version of perl
 use utf8;
 binmode STDOUT, ':encoding(UTF-8)';
-use warnings;
 use Carp qw/croak/; # to handle errors
 use Scalar::Util qw(looks_like_number);
 
