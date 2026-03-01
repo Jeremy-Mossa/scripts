@@ -47,7 +47,7 @@ open(my $fh, '>', $file_name);
 print $fh <<'EOF';
 #!/usr/bin/env perl
 
-#----------------------------- CONFIG ----------------------------------
+#------------------------------- CONFIG --------------------------------
 
 use 5.42.0; # version of perl
 use utf8;
@@ -56,7 +56,7 @@ use warnings;
 use Carp qw/croak/; # to handle errors
 use Scalar::Util qw(looks_like_number);
 
-#---------------------------- END CONFIG -------------------------------
+#----------------------------- END CONFIG ------------------------------
 
 
 EOF
