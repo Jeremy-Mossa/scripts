@@ -54,7 +54,7 @@ use utf8;
 binmode STDIN,  ':encoding(UTF-8)';
 binmode STDOUT, ':encoding(UTF-8)';
 binmode STDERR, ':encoding(UTF-8)';
-use Carp qw/croak/; # to handle errors
+use Carp qw(croak); # to handle errors
 use Scalar::Util qw(looks_like_number);
 
 #----------------------------- END CONFIG ------------------------------
