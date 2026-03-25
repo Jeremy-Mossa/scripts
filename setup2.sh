@@ -136,6 +136,9 @@ polybar
 rofi
 djview4
 xinput
+proxychains-ng
+mtr
+httping
 "
 
 dnf copr enable zeno/scrcpy
