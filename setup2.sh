@@ -139,6 +139,7 @@ xinput
 proxychains-ng
 mtr
 httping
+midori
 "
 
 dnf copr enable zeno/scrcpy
