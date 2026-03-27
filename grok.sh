@@ -24,10 +24,7 @@ done
 # Get grok on WS 1
 if ! wmctrl -l | grep -q "GROK"; then
   rm $HOME/.config/chromium/SingletonLock >/dev/null 2>&1
-  /bin/chromium-browser --window-name="GROK" \
-    --proxy-server="socks5://127.0.0.1:1080" \
-    --host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE 127.0.0.1" \
-    https://grok.com >/dev/null 2>&1 &
+  /home/jbm/perl/grok.pl
   disown
   sleep 0.5
   wmctrl -r "GROK" -t 0
